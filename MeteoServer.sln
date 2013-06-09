@@ -3,10 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeteoServer", "MeteoServer.csproj", "{4B9E9B1A-71B7-4CC9-8C68-4037158B7C90}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFClient", "..\WPFClient\WPFClient.csproj", "{AE2216B8-4151-4BA8-9B0F-22A1E70741DA}"
-	ProjectSection(ProjectDependencies) = postProject
-		{4B9E9B1A-71B7-4CC9-8C68-4037158B7C90} = {4B9E9B1A-71B7-4CC9-8C68-4037158B7C90}
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFClient", "..\MeteoClientApp\WPFClient.csproj", "{AE2216B8-4151-4BA8-9B0F-22A1E70741DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
