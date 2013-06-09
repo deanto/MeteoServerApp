@@ -1,0 +1,4 @@
+DATA_BASE\Files\Denis\my.txt all
+DATA_BASE\Files\Denis\m2.txt all
+DATA_BASE\Files\Denis\m3.txt all
+DATA_BASE\Files\Denis\Public\m1.txt all

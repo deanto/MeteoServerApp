@@ -1,0 +1,4 @@
+root01 root yes all,def v2
+craft01 craft no all,def v3
+admin01 admin def def def
+cust01 cust yes all,def,r def
