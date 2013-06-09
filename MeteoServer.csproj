@@ -73,7 +73,7 @@
       <DependentUpon>ServerView.cs</DependentUpon>
     </Compile>
     <Compile Include="Components\UserManagement\IUserManagement.cs" />
-    <Compile Include="Components\WeatherCalculating.cs" />
+    <Compile Include="Components\WeatherCalculating\WeatherCalculating.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -132,8 +132,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Components\ClientView\" />
-    <Folder Include="Components\WeatherCalculating\" />
     <Folder Include="Components\WeatherDisplay\" />
   </ItemGroup>
   <ItemGroup>

@@ -33,16 +33,65 @@ namespace MeteoServer.Components
 
             string[] mapBuffer = fm.GetThisFile(user, map); // буффер карты
             string[] weatherBuffer = fm.GetThisFile(user, weather);// буффер погоды
+            //
+
 
             
 
             return workFrames;
         }
+    }
+
+    class WeatherCalculator
+    { 
+        // этот класс реализует алгоритм рассчета погоды
+
+        private double IntersectionArea(IMapObject a, IMapObject b)
+        {// возвращает площадь пересечения
 
 
-        
+            return 0;
+        }
 
     }
+
+    interface IMapObject
+    {
+       double X { get; set;}
+       double Y { get; set;}
+       double R { get; set;}
+    }
+
+   abstract class AMapObject:IMapObject
+    { 
+        // этот класс содержит общую информацию для каждого объекта на карте.
+        private double x, y, r, value; // характеристики объекта
+        public double X { get { return x; } set { x = value; } }
+        public double Y { get { return y; } set { y = value; } }
+        public double R { get { return r; } set { r = value; } }
+        public double V { get { return value; } set { this.value = value; } }
+
+        public double S { get { return Math.PI * r * r; } }// площадь
+	
+    }
+
+   class Land : AMapObject
+   {// либо гора либо низина
+       public Land(double x, double y, double r, double v)
+       {
+           X = x; Y = y; R = r; V = v;
+       }
+   }
+
+   class Cyclone : AMapObject
+   {// циклон
+       public Cyclone(double x, double y, double r, double v)
+       {
+           X = x; Y = y; R = r; V = v; 
+       }
+   }
+
+
 
 
 
