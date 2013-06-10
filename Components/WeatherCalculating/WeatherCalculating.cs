@@ -47,10 +47,45 @@ namespace MeteoServer.Components
         // этот класс реализует алгоритм рассчета погоды
 
         private double IntersectionArea(IMapObject a, IMapObject b)
-        {// возвращает площадь пересечения
+        {// возвращает площадь пересечения окружностей
 
+            double D;// расстояние между центрами окружностей
 
-            return 0;
+            D = Math.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y));
+
+            double F1, F2;
+            
+            F1 = 2 * Math.Acos((a.R * a.R - b.R * b.R + D * D) / (2 * a.R * D));
+            F2 = 2 * Math.Acos((b.R * b.R - a.R * a.R + D * D) / (2 * b.R * D));
+
+            double S1, S2;
+
+            S1=(a.R*a.R*(F1-Math.Sin(F1)))/2;
+            S2 = (b.R * b.R * (F2 - Math.Sin(F2))) / 2;
+
+            return S1+S2;
+        }
+
+        private List<IMapObject> Land;// список элементов карты
+        private List<IMapObject> Weather;// список элементов погоды
+
+        private int time;
+
+        public void AddLand(IMapObject s) { if (Land == null) Land = new List<IMapObject>(); Land.Add(s); time = 0; }
+        public void AddWather(IMapObject s) { if (Weather == null) Weather = new List<IMapObject>(); Weather.Add(s);}
+
+        private void CalculateTact()
+        { /*// взять текущее расположение погоды на карте и рассчитать такт вперед
+            // у нас есть положение. круги могут быть уже перекрыты другими.
+            // текущее время у нас есть time 
+            // нужно увеличить круги. потом посмотреть все перекрытия и рассчитать количество энергии которое нужно перераспределить
+
+            // сначала пройдем все пересечения и посмотрим сколько каждый должен отдать (соответственно другой получит)
+            // так как одновременно должно происходить смешивание. то у нас могут быть области, которые одновременно и получают и отдают...
+            
+           * 
+
+            */
         }
 
     }
