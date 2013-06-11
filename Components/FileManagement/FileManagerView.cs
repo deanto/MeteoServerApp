@@ -170,9 +170,7 @@ namespace MeteoServer.Components.FileManagement
             editor.SetBackgroundMap = backgroudmap;
            
 
-                editor.WinFormsEdit();
-
-
+            editor.WinFormsEdit();
 
             file = editor.Buffer;// теперь новое значение
 

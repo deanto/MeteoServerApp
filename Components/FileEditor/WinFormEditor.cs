@@ -99,23 +99,27 @@ namespace MeteoServer.Components.FileEditor
             }
             //
 
-
+            // если это у нас погода, то узнаем сколько там циклонов
 
             rings = new List<Ring>();
-
+            int pos=0;
             for (int i = 1; i < Buffer.Length; i++)
             {
                 Ring tmp = new Ring();
 
                 string[] lines = Buffer[i].Split(default(string[]), StringSplitOptions.RemoveEmptyEntries);
 
-                tmp.X = Convert.ToDouble(lines[0]);
-                tmp.Y = Convert.ToDouble(lines[1]);
-                tmp.R = Convert.ToDouble(lines[2]);
-                tmp.VALUE = Convert.ToDouble(lines[3]);
+                if (lines.Length != 0) // это условие отбросит строчки после пустой(траектории там для циклонов, если это погода)
+                {
+                    tmp.X = Convert.ToDouble(lines[0]);
+                    tmp.Y = Convert.ToDouble(lines[1]);
+                    tmp.R = Convert.ToDouble(lines[2]);
+                    tmp.VALUE = Convert.ToDouble(lines[3]);
 
 
-                rings.Add(tmp);
+                    rings.Add(tmp);
+                }
+                else { pos=i; break; }
             }
 
             
@@ -139,6 +143,37 @@ namespace MeteoServer.Components.FileEditor
             // заполнили структуры данных кольцами + прямоугольник есть тоже
             // если мы работаем с погодой - проинициализируем данные о траекториях
             CyclonesPath = new List<double[]>[rings.Count];
+
+            if (pos != 0)
+            {
+                
+                // значт это погода и есть траектории!
+                //pos это пустая строчка в Buffer
+                // заполним пути циклонов и ок)
+
+                pos++;
+
+                for (int i = 0; i < Buffer.Length - pos; i++)
+                {
+
+                    
+                    if (Buffer[i + pos].Length != 0)
+                    {
+                        CyclonesPath[i] = new List<double[]>();
+                        string[] tmp = Buffer[i + pos].Split(default(string[]), StringSplitOptions.RemoveEmptyEntries);
+
+                        for (int t = 0; t < tmp.Length; t += 2)
+                        {
+
+                            CyclonesPath[i].Add(new double[2] { Convert.ToDouble(tmp[t]), Convert.ToDouble(tmp[t + 1]) });
+
+                        }
+                        CyclonesPath[i].Add(CyclonesPath[i][0]);
+                    }
+
+                }
+
+            }
 
             ShowData();
             
@@ -378,6 +413,44 @@ namespace MeteoServer.Components.FileEditor
 
                 Buffer[i+1] = tmp;
             }
+
+            // часть с траекториями будет следовать после части с данными о циклонах. разделитель - пустая строка
+            if (BackGround != null)
+            {
+                string[] oldBuf = new string[Buffer.Length];
+                for (int i = 0; i < Buffer.Length; i++)
+                    oldBuf[i] = Buffer[i];
+
+
+                Buffer = new string[oldBuf.Length + 1 + CyclonesPath.Length];
+                for (int i = 0; i < oldBuf.Length; i++)
+                    Buffer[i] = oldBuf[i];
+
+                // старые данные сохранены
+                Buffer[oldBuf.Length] = ""; // разделитель.
+                // добавим данные о траекториях циклонов
+
+                for (int i = 0; i < CyclonesPath.Length; i++)
+                {
+                    string tmp = "";
+                    if (CyclonesPath[i]!=null)
+                        for (int q = 0; q < CyclonesPath[i].Count; q++)
+                        {
+                            tmp += CyclonesPath[i][q][0].ToString() + " ";
+                            tmp += CyclonesPath[i][q][1].ToString() + " ";
+                        }
+
+                    string correcttmp = "";
+                    if (tmp!="")
+                    for (int q = 0; q < tmp.Length - 1; q++) correcttmp += tmp[q];
+
+                    Buffer[oldBuf.Length +1+ i] = correcttmp;
+
+                }
+
+            }
+            
+
         }
 
         private void button2_Click(object sender, EventArgs e)
