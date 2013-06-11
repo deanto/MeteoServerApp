@@ -14,11 +14,15 @@ namespace MeteoServer.Components.FileEditor
 {
     public partial class WinFormEditor : Form
     {
+        int PATHEDIT;
+
         int IntoPos;
         int BordPos;
         bool mousPressed;
 
         int selectedOne;
+
+        private List<double[]>[] CyclonesPath; // траектории всех кругов [0] номер циклона. потом по два значения - координаты точек в траектории.
 
         private string[] Buffer;
         public string[] FILEBuf { set { Buffer = value; } get { return Buffer; } }
@@ -44,7 +48,7 @@ namespace MeteoServer.Components.FileEditor
 
         private void WinFormEditor_Load(object sender, EventArgs e)
         {
-
+            PATHEDIT = 0;
             // эта секция отвечает за то, чтобы если файл пуст - создать его
             int newx=0,newy=0;
 
@@ -133,9 +137,11 @@ namespace MeteoServer.Components.FileEditor
 
 
             // заполнили структуры данных кольцами + прямоугольник есть тоже
+            // если мы работаем с погодой - проинициализируем данные о траекториях
+            CyclonesPath = new List<double[]>[rings.Count];
 
             ShowData();
-
+            
         }
 
 
@@ -218,8 +224,6 @@ namespace MeteoServer.Components.FileEditor
                 pictureBox1.Image = cadr;
             }
 
-
-
             // отрисуем все из List<Ring> rings и  Rectangle req на окошечко
 
             if (cadr==null)
@@ -235,59 +239,130 @@ namespace MeteoServer.Components.FileEditor
                 gr.DrawString(Convert.ToString(rings[i].VALUE), new Font("Arial", 10), new SolidBrush(Color.Black), (int)rings[i].X,(int)rings[i].Y);
 
                 if (selectedOne == i) gr.DrawEllipse(new Pen(new SolidBrush(Color.Black),10), (int)rings[i].X - (int)(rings[i].R), (int)rings[i].Y - (int)(rings[i].R), (int)rings[i].R * 2, (int)rings[i].R * 2);
+            
+                // круги сами нарисовали. теперь добавим траектории сереньким цветом.
+
+                
+                if (CyclonesPath[i] != null)
+                { 
+                    Point[] P= new Point[CyclonesPath[i].Count];
+                    for (int p = 0; p < CyclonesPath[i].Count; p++)
+                        P[p] = new Point((int)CyclonesPath[i][p][0],(int)CyclonesPath[i][p][1]);
+
+                    if (selectedOne!=i)
+                    gr.DrawLines(new Pen(new SolidBrush(Color.Silver), 3), P);
+                    else gr.DrawLines(new Pen(new SolidBrush(Color.Red), 4), P);
+                }
             }
 
             pictureBox1.Image = cadr;
-            
+
+            if ((BackGround != null) && (selectedOne >= 0)) button4.Enabled = true; else button4.Enabled = false;
+
         }
 
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
-            IntoPos=-1;
-            BordPos = -1;
+            if (PATHEDIT == 0)
+            {// если мы не в режиме редактирования пути
 
-            Point p = pictureBox1.PointToClient(System.Windows.Forms.Cursor.Position);
+                IntoPos = -1;
+                BordPos = -1;
 
-            for (int i = 0; i < rings.Count; i++)
-                if (rings[i].Into(p.X,p.Y)) IntoPos = i;
+                Point p = pictureBox1.PointToClient(System.Windows.Forms.Cursor.Position);
 
-            for (int i = 0; i < rings.Count; i++)
-                if (rings[i].Focus(p.X, p.Y)) BordPos = i;
+                for (int i = 0; i < rings.Count; i++)
+                    if (rings[i].Into(p.X, p.Y)) IntoPos = i;
 
-            mousPressed = true;
-            selectedOne = IntoPos;
+                for (int i = 0; i < rings.Count; i++)
+                    if (rings[i].Focus(p.X, p.Y)) BordPos = i;
 
-            ShowData();
+                mousPressed = true;
+                selectedOne = IntoPos;
+
+                ShowData();
+            }
+            else
+            { 
+            // в режиме редактирования пути и нажали на область окна
+
+                // возьмем список точек из траектории для этого циклона. на предпоследнем месте теперь будет текущая точка.
+                // таким образом увеличим траекторию на текущую точку.
+                Point p = pictureBox1.PointToClient(System.Windows.Forms.Cursor.Position);
+
+                CyclonesPath[selectedOne].RemoveAt(CyclonesPath[selectedOne].Count - 1);// удалили последнюю точку(центр циклона)
+                CyclonesPath[selectedOne].Add(new double[2] { p.X,p.Y}); // добавили текущую
+                CyclonesPath[selectedOne].Add(CyclonesPath[selectedOne][0]); // замкнули траекторию
+
+                ShowData();
+            }
+
 
         }
 
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
-            if (mousPressed)
-            { 
-                // если кнопка зажата
-                Point p = pictureBox1.PointToClient(System.Windows.Forms.Cursor.Position);
+            
+                if (mousPressed)
+                {
+                    // если кнопка зажата
+                    Point p = pictureBox1.PointToClient(System.Windows.Forms.Cursor.Position);
 
-                if (IntoPos != -1)
-                { 
-                    // мы внутри круга
-                    rings[IntoPos].ChangeXY(p.X, p.Y);
-                    
+                    if (IntoPos != -1)
+                    {
 
+                        // вместе с изменением положения круга, нужно изменить и положение траектории (если мы редактируем погоду)
+                        if (BackGround != null)
+                        {
+                            // тоесть у нас всетаки погодная карта редактируется
+                            double prevX = rings[IntoPos].X;
+                            double prevY = rings[IntoPos].Y;
+
+                            double Xchange = p.X - prevX; // сколько нужно прибавить к коодинатам (может быть отрицательным)
+                            double Ychange = p.Y - prevY; //
+
+                            // теперь эти изменения добавим к траектории
+                            if (CyclonesPath[selectedOne] != null)
+                            {
+
+                                for (int i = 0; i < CyclonesPath[selectedOne].Count - 1; i++)
+                                {
+                                    CyclonesPath[selectedOne][i][0] += Xchange;
+                                    CyclonesPath[selectedOne][i][1] += Ychange;
+                                }
+                            }
+
+                        }
+
+                        // мы внутри круга
+                        rings[IntoPos].ChangeXY(p.X, p.Y);
+
+                        
+
+                    }
+                    if (BordPos != -1)
+                    {
+                        // мы на границе круга
+                        rings[BordPos].ChangeR(p.X, p.Y);
+
+                    }
+                    ShowData();
                 }
-                if (BordPos != -1)
-                { 
-                    // мы на границе круга
-                    rings[BordPos].ChangeR(p.X, p.Y);
-                    
-                }
-                ShowData();
-            }
+           
+
         }
 
         private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
         {
-            mousPressed = false;
+            if (PATHEDIT == 0)
+            {// если мы не в режиме редактирования пути
+                mousPressed = false;
+            }
+            else
+            { 
+                
+            }
+
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -325,6 +400,36 @@ namespace MeteoServer.Components.FileEditor
                 rings.RemoveAt(selectedOne);
                 ShowData();
             }
+        }
+
+        // это кнопка создает траекторию для циклона
+        private void button4_Click_1(object sender, EventArgs e)
+        {
+            if ((selectedOne != -1) && (PATHEDIT == 0))
+            {
+                // есть что редактировать.
+                PATHEDIT = 1;
+                this.BackColor = Color.Red;
+                // вошли в режим редактирования пути. знаем для какого циклона.
+
+                // очистим предыдущий путь и начнем заново.
+                // первая и последняя точки в пути - центр циклона
+
+                CyclonesPath[selectedOne] = new List<double[]>();
+                CyclonesPath[selectedOne].Add(new double[2] { rings[selectedOne].X,rings[selectedOne].Y,});
+                CyclonesPath[selectedOne].Add(new double[2] { rings[selectedOne].X,rings[selectedOne].Y,});
+
+                // теперь для этого циклона - траектория из двух точек - из начала в начало
+                ShowData();
+            } else
+            if (PATHEDIT == 1) 
+            {
+                // закончили редактировать путь для циклона
+                PATHEDIT = 0; 
+                this.BackColor = Control.DefaultBackColor;
+                ShowData();
+            }
+                
         }
 
 
