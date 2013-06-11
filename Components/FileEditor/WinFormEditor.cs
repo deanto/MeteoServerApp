@@ -23,6 +23,14 @@ namespace MeteoServer.Components.FileEditor
         private string[] Buffer;
         public string[] FILEBuf { set { Buffer = value; } get { return Buffer; } }
 
+        private string[] BackGround;
+        public string[] BackgroundMap { set { BackGround = value; } }
+
+        List<Ring> BackGroundrings;
+        Rectangle BackGroundreq;
+
+
+
         List<Ring> rings;
         Rectangle req;
 
@@ -32,19 +40,58 @@ namespace MeteoServer.Components.FileEditor
             InitializeComponent();
         }
 
+
+
         private void WinFormEditor_Load(object sender, EventArgs e)
         {
 
-            // эта секция отвечает за то, чтобы если файл пуст - создать его.
+            // эта секция отвечает за то, чтобы если файл пуст - создать его
             int newx=0,newy=0;
 
             if (Buffer.Length==0)
             {
-            MessageBox.Show("Файл еще несодержит данных. Пожалуйста укажите размерность карты.");
-            Dilog1 d = new Dilog1();
-            d.ShowDialog();
+                if (BackGround == null)
+                {// если нам не прислали фон - значит либо ошибка произошла либо это просто файл карты.
+                    MessageBox.Show("Файл еще несодержит данных. Пожалуйста укажите размерность карты.");
+                    Dilog1 d = new Dilog1();
+                    d.ShowDialog();
 
-            newx = d.x; newy = d.y;
+                    newx = d.x; newy = d.y;
+                }
+                else
+                {// значит нам прислали фон. это точно погода. если она пустая - размерность возьмем из карты местности
+                    // в первой строчке указаны размеры.
+                    string[] lines = BackGround[0].Split(default(string[]), StringSplitOptions.RemoveEmptyEntries);
+
+                    int X = Convert.ToInt32(lines[0]);
+                    int Y = Convert.ToInt32(lines[1]);
+
+                    newx = X;
+                    newy = Y;
+
+                }
+
+
+            }
+
+            if (BackGround!=null)
+            {
+             BackGroundrings = new List<Ring>();
+
+                    for (int i = 1; i < BackGround.Length; i++)
+                    {
+                        Ring tmp = new Ring();
+
+                        string[] lines1 = BackGround[i].Split(default(string[]), StringSplitOptions.RemoveEmptyEntries);
+
+                        tmp.X = Convert.ToDouble(lines1[0]);
+                        tmp.Y = Convert.ToDouble(lines1[1]);
+                        tmp.R = Convert.ToDouble(lines1[2]);
+                        tmp.VALUE = Convert.ToDouble(lines1[3]);
+
+
+                        BackGroundrings.Add(tmp);
+                    }
             }
             //
 
@@ -149,13 +196,38 @@ namespace MeteoServer.Components.FileEditor
 
         private void ShowData()
         {
+            // если есть фон - заполним его.
+
+            Bitmap cadr=null;
+
+            if (BackGround != null)
+            {
+                cadr = new Bitmap((int)req.X, (int)req.Y);
+
+                Graphics gr1 = Graphics.FromImage(cadr);
+                gr1.FillRectangle(new SolidBrush(Color.White), 0, 0, (int)req.X, (int)req.Y);
+
+                for (int i = 0; i < BackGroundrings.Count; i++)
+                {
+                    gr1.FillEllipse(new SolidBrush(Color.FromArgb((int)BackGroundrings[i].VALUE, (int)BackGroundrings[i].VALUE, (int)BackGroundrings[i].VALUE)), (int)BackGroundrings[i].X - (int)(BackGroundrings[i].R), (int)BackGroundrings[i].Y - (int)(BackGroundrings[i].R), (int)BackGroundrings[i].R * 2, (int)BackGroundrings[i].R * 2);
+                    gr1.DrawString(Convert.ToString(BackGroundrings[i].VALUE), new Font("Arial", 5), new SolidBrush(Color.Black), (int)BackGroundrings[i].X, (int)BackGroundrings[i].Y);
+
+
+                }
+
+                pictureBox1.Image = cadr;
+            }
+
+
+
             // отрисуем все из List<Ring> rings и  Rectangle req на окошечко
 
-            Bitmap cadr = new Bitmap((int)req.X, (int)req.Y);
+            if (cadr==null)
+            cadr = new Bitmap((int)req.X, (int)req.Y);
 
             Graphics gr = Graphics.FromImage(cadr);
 
-            gr.FillRectangle(new SolidBrush(Color.White), 0, 0, (int)req.X, (int)req.Y);
+            if (BackGround == null) gr.FillRectangle(new SolidBrush(Color.White), 0, 0, (int)req.X, (int)req.Y);
 
             for (int i = 0; i < rings.Count; i++)
             {

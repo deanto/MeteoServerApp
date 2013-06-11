@@ -17,6 +17,9 @@ namespace MeteoServer.Components.FileEditor
         private string[] fileBuffer;
         public string[] Buffer { get { return fileBuffer; } set { fileBuffer = value; } }
 
+        private string[] BackgroundMap;
+        public string[] SetBackgroundMap { set { BackgroundMap = value; } }
+
 
         public void WinFormsEdit()
         { // для серверной части
@@ -25,6 +28,7 @@ namespace MeteoServer.Components.FileEditor
 
             WinFormEditor e = new WinFormEditor();
             e.FILEBuf = fileBuffer;
+            e.BackgroundMap = BackgroundMap;
             e.ShowDialog();
 
             fileBuffer = e.FILEBuf;

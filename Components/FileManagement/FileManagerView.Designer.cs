@@ -39,7 +39,6 @@
             this.textBox2 = new System.Windows.Forms.TextBox();
             this.richTextBox2 = new System.Windows.Forms.RichTextBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.button5 = new System.Windows.Forms.Button();
             this.textBox4 = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
@@ -144,15 +143,6 @@
             this.label3.TabIndex = 10;
             this.label3.Text = "Права доступа";
             // 
-            // button5
-            // 
-            this.button5.Location = new System.Drawing.Point(401, 228);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(234, 23);
-            this.button5.TabIndex = 11;
-            this.button5.Text = "Изменить";
-            this.button5.UseVisualStyleBackColor = true;
-            // 
             // textBox4
             // 
             this.textBox4.Location = new System.Drawing.Point(400, 281);
@@ -166,7 +156,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(670, 423);
             this.Controls.Add(this.textBox4);
-            this.Controls.Add(this.button5);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.richTextBox2);
             this.Controls.Add(this.button4);
@@ -199,7 +188,6 @@
         private System.Windows.Forms.TextBox textBox2;
         private System.Windows.Forms.RichTextBox richTextBox2;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Button button5;
         private System.Windows.Forms.TextBox textBox4;
     }
 }

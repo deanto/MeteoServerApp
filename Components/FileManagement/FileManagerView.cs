@@ -133,18 +133,41 @@ namespace MeteoServer.Components.FileManagement
 
         private void button1_Click(object sender, EventArgs e)
         {// изменить файл
+            
+
 
             string path = richTextBox1.SelectedText;
             string correctpath = "";
             for (int i = 0; i < path.Length-1; i++) correctpath += path[i];
 
             string[] file = fm.GetThisFile(current,correctpath);
+        
+            
+            
+            // если мы редактируем погоду - то нам на заднем фоне бы поиметь карту.
+            // поэтому, мы посмотрим - если это погода, то попросим еще и карту. 
+            string[] backgroudmap=null;
+            if (correctpath.Contains("weather"))
+            { 
+            // значит всетаки файлик погоды редактируем.
 
+                // в этой же папке лежит файлик карты. с именем map.txt ее загрузим как фон
+                string map = "";
+                int maxpos = correctpath.Length-1;
+
+                while (correctpath[maxpos] != '\\') maxpos--;
+
+                for (int i = 0; i < maxpos + 1; i++) map += correctpath[i];
+                map += "map.txt";
+
+                backgroudmap = fm.GetThisFile(current, map);
+                
+            }
 
             EditFiles editor = new EditFiles();
             editor.setUser = current;
             editor.Buffer = file;
-
+            editor.SetBackgroundMap = backgroudmap;
            
 
                 editor.WinFormsEdit();
@@ -195,6 +218,11 @@ namespace MeteoServer.Components.FileManagement
 
             fm.CreateNewDirectory(current, textBox1.Text);
             ShowFileTree();
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+
         }
         
 
