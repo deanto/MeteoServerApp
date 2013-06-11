@@ -38,7 +38,6 @@ namespace MeteoServer.Components.FileManagement
            
             ShowFileTree();
 
-          
         }
 
 
@@ -133,7 +132,7 @@ namespace MeteoServer.Components.FileManagement
         }
 
         private void button1_Click(object sender, EventArgs e)
-        {
+        {// изменить файл
 
             string path = richTextBox1.SelectedText;
             string correctpath = "";

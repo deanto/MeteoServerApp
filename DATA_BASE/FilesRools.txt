@@ -1,4 +1,8 @@
-DATA_BASE\Files\Denis\my.txt all
-DATA_BASE\Files\Denis\m2.txt all
-DATA_BASE\Files\Denis\m3.txt all
-DATA_BASE\Files\Denis\Public\m1.txt all
+DATA_BASE\Files\Public\Russia\map.txt all def
+DATA_BASE\Files\Public\Russia\weather.txt all def
+DATA_BASE\Files\Public\Russia\weather1.txt all def
+DATA_BASE\Files\Public\Russia\weather2.txt all def
+DATA_BASE\Files\Public\USA\map.txt all def
+DATA_BASE\Files\Public\USA\weather.txt all def
+DATA_BASE\Files\Public\USA\weather1.txt all def
+DATA_BASE\Files\Public\USA\weather2.txt all def

@@ -1,4 +1,4 @@
-root 0 1
+root
 craft
 admin
 cust
