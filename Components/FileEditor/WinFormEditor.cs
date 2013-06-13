@@ -277,7 +277,8 @@ namespace MeteoServer.Components.FileEditor
             
                 // круги сами нарисовали. теперь добавим траектории сереньким цветом.
 
-                if (BackGround!=null)
+                if ((BackGround!=null)&&(CyclonesPath.Length!=0))
+
                 if (CyclonesPath[i] != null)
                 { 
                     Point[] P= new Point[CyclonesPath[i].Count];
@@ -288,7 +289,7 @@ namespace MeteoServer.Components.FileEditor
                 }
             }
 
-            if (BackGround != null)
+            if ((BackGround != null)&&(CyclonesPath.Length!=0))
             for (int i = 0; i < rings.Count; i++)
             {
                 if (selectedOne == i)
@@ -368,6 +369,7 @@ namespace MeteoServer.Components.FileEditor
                             double Ychange = p.Y - prevY; //
 
                             // теперь эти изменения добавим к траектории
+                            if (CyclonesPath.Length!=0)
                             if (CyclonesPath[selectedOne] != null)
                             {
 
@@ -474,6 +476,33 @@ namespace MeteoServer.Components.FileEditor
             tmp.CONDUCT = Convert.ToDouble(textBox1.Text.ToString());
 
             rings.Add(tmp);
+            // когда создаем круги - нужно под пути создать место.
+
+            List<double[]>[] NewCyclonesPath = new List<double[]>[CyclonesPath.Length+1];
+
+            // копируем туда данные
+            if (CyclonesPath.Length != 0)
+            {
+                for (int i = 0; i < CyclonesPath.Length; i++)
+                {
+                    List<double[]> tmp1 = new List<double[]>();
+                    for (int q = 0; q < CyclonesPath[i].Count; q++)
+                    {
+                        double[] tmp3 = new double[2];
+                        tmp3[0] = CyclonesPath[i][q][0];
+                        tmp3[1] = CyclonesPath[i][q][1];
+
+                        tmp1.Add(tmp3);
+                    }
+                    NewCyclonesPath[i] = tmp1;
+                }
+
+                NewCyclonesPath[CyclonesPath.Length] = null;
+            }
+            else NewCyclonesPath[0] = null;
+
+            CyclonesPath = NewCyclonesPath;
+
             ShowData();
 
         }
@@ -499,6 +528,8 @@ namespace MeteoServer.Components.FileEditor
 
                 // очистим предыдущий путь и начнем заново.
                 // первая и последняя точки в пути - центр циклона
+
+               
 
                 CyclonesPath[selectedOne] = new List<double[]>();
                 CyclonesPath[selectedOne].Add(new double[2] { rings[selectedOne].X,rings[selectedOne].Y,});

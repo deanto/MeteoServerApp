@@ -63,7 +63,8 @@ namespace MeteoServer.Components.FileManagement
             for (int i = 0; i < tree.Count; i++)
             { 
                 // пройдем по всем строчкам, возьмем имена файлов - к ним найдем права и отобразим.
-                 GetRights(showlines[i], files.FileList);
+                rightss = null;
+                GetRights(showlines[i], files.FileList);
                  string[] rights = rightss;
 
                 if (rights == null)
@@ -73,7 +74,6 @@ namespace MeteoServer.Components.FileManagement
                     string tmp = ""; for (int a = 0; a < rights.Length; a++) tmp += " " + rights[a];
                     shourights += tmp + "\n";
                 }
-
 
             }
 
@@ -102,9 +102,6 @@ namespace MeteoServer.Components.FileManagement
 
             for (int e = 0; e < dir.subdirectorys.Count; e++)
                 GetRights(file, dir.subdirectorys[e]);
-
-
-            
 
 
         }
@@ -196,13 +193,13 @@ namespace MeteoServer.Components.FileManagement
                 string[] rights = textBox4.Text.Split(new[] { ' ' });
                 fm.CreateNewFile(current, textBox2.Text.ToString(), rights);
                 ShowFileTree();
+
             }
             else MessageBox.Show("не указаны права!");
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-
             string path = richTextBox1.SelectedText;
             string correctpath = "";
             for (int i = 0; i < path.Length - 1; i++) correctpath += path[i];
@@ -213,7 +210,6 @@ namespace MeteoServer.Components.FileManagement
 
         private void button3_Click_1(object sender, EventArgs e)
         {
-
             fm.CreateNewDirectory(current, textBox1.Text);
             ShowFileTree();
         }
@@ -223,6 +219,5 @@ namespace MeteoServer.Components.FileManagement
 
         }
         
-
     }
 }

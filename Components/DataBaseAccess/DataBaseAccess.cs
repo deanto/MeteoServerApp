@@ -555,17 +555,26 @@ class WatchingFileRights
         for (int i = 0; i < lines.Length; i++)
         {
             string[] tmp = lines[i].Split(new[] { ' ' });
-            if (tmp[0] == path) pos = i;
+            if (tmp[0].Equals(path)) pos = i;
         }
 
-        if (pos != 1)
+        if (pos != -1)
         {
             if (lines.Length == 1) System.IO.File.WriteAllText(FileAccessRights, "");
             else
             {
-                string[] newLines = new string[lines.Length];
-                for (int i = 0; i < lines.Length - 1; i++) newLines[i] = lines[i];
-                newLines[pos] = lines[lines.Length - 1];
+                string[] newLines = new string[lines.Length-1];
+                int t = 0;
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    string[] tmp = lines[i].Split(new[] { ' ' });
+                    if (!tmp[0].Equals(path))
+                    {
+                        newLines[t] = lines[i];
+                        t++;
+                    }
+                }
+                
                 System.IO.File.WriteAllLines(FileAccessRights, newLines);
             }
         }
