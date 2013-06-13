@@ -129,7 +129,6 @@ namespace MeteoServer.Components.FileEditor
             if (Buffer.Length != 0)
             {
                 string[] l = Buffer[0].Split(default(string[]), StringSplitOptions.RemoveEmptyEntries);
-            
 
                 req.X = Convert.ToDouble(l[0]);
                 req.Y = Convert.ToDouble(l[1]);
@@ -459,7 +458,7 @@ namespace MeteoServer.Components.FileEditor
             tmp.X = 100;
             tmp.Y = 100;
             tmp.R = 50;
-            tmp.VALUE =Convert.ToDouble( textBox4.Text.ToString());
+            tmp.VALUE =Convert.ToDouble(textBox4.Text.ToString());
 
             rings.Add(tmp);
             ShowData();
