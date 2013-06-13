@@ -63,7 +63,7 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(108, 600);
+            this.button2.Location = new System.Drawing.Point(134, 596);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(63, 48);
             this.button2.TabIndex = 2;
@@ -74,15 +74,15 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(12, 603);
+            this.label4.Location = new System.Drawing.Point(12, 599);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(34, 13);
+            this.label4.Size = new System.Drawing.Size(67, 13);
             this.label4.TabIndex = 10;
-            this.label4.Text = "Temp";
+            this.label4.Text = "Temperature";
             // 
             // textBox4
             // 
-            this.textBox4.Location = new System.Drawing.Point(49, 600);
+            this.textBox4.Location = new System.Drawing.Point(88, 596);
             this.textBox4.Name = "textBox4";
             this.textBox4.Size = new System.Drawing.Size(40, 20);
             this.textBox4.TabIndex = 9;
@@ -111,15 +111,15 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 631);
+            this.label1.Location = new System.Drawing.Point(12, 627);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(32, 13);
+            this.label1.Size = new System.Drawing.Size(65, 13);
             this.label1.TabIndex = 15;
-            this.label1.Text = "Cond";
+            this.label1.Text = "Conductivity";
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(49, 628);
+            this.textBox1.Location = new System.Drawing.Point(88, 624);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(40, 20);
             this.textBox1.TabIndex = 14;

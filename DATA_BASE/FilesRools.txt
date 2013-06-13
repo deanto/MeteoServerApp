@@ -2,7 +2,3 @@ DATA_BASE\Files\Public\Russia\map.txt all def
 DATA_BASE\Files\Public\Russia\weather.txt all def
 DATA_BASE\Files\Public\Russia\weather1.txt all def
 DATA_BASE\Files\Public\Russia\weather2.txt all def
-DATA_BASE\Files\Public\USA\map.txt all def
-DATA_BASE\Files\Public\USA\weather.txt all def
-DATA_BASE\Files\Public\USA\weather1.txt all def
-DATA_BASE\Files\Public\USA\weather2.txt all def

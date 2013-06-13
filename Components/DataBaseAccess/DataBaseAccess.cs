@@ -110,7 +110,6 @@ abstract class UserRequestHandler : IRequestHandler
 
         string[] lines = System.IO.File.ReadAllLines(@"DATA_BASE\Users.txt");
 
-        
 
         for (int i = 0; i < lines.Length; i++)
         {

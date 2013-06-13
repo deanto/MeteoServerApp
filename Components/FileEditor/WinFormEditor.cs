@@ -181,11 +181,12 @@ namespace MeteoServer.Components.FileEditor
 
         class Ring // собственный класс для описания кругов на карте (или циклонов на погоде)
         {
-            private double x, y, r, value; // характеристики круга
+            private double x, y, r, value, conductivity; // характеристики круга
             public double X { get { return x; } set { x = value; } }
             public double Y { get { return y; } set { y = value; } }
             public double R { get { return r; } set { r = value; } }
             public double VALUE { get { return value; } set { this.value = value; } }
+            public double CONDUCT { get { return conductivity; } set { conductivity = value; } }
 
             public bool Focus(double ax, double ay)
             { // на границе
@@ -276,17 +277,28 @@ namespace MeteoServer.Components.FileEditor
             
                 // круги сами нарисовали. теперь добавим траектории сереньким цветом.
 
-                
+                if (BackGround!=null)
                 if (CyclonesPath[i] != null)
                 { 
                     Point[] P= new Point[CyclonesPath[i].Count];
                     for (int p = 0; p < CyclonesPath[i].Count; p++)
                         P[p] = new Point((int)CyclonesPath[i][p][0],(int)CyclonesPath[i][p][1]);
-
                     if (selectedOne!=i)
-                    gr.DrawLines(new Pen(new SolidBrush(Color.Silver), 3), P);
-                    else gr.DrawLines(new Pen(new SolidBrush(Color.Red), 4), P);
+                        gr.DrawLines(new Pen(new SolidBrush(Color.Silver), 3), P);
                 }
+            }
+
+            if (BackGround != null)
+            for (int i = 0; i < rings.Count; i++)
+            {
+                if (selectedOne == i)
+                    if (CyclonesPath[i] != null)
+                    {
+                        Point[] P = new Point[CyclonesPath[i].Count];
+                        for (int p = 0; p < CyclonesPath[i].Count; p++)
+                            P[p] = new Point((int)CyclonesPath[i][p][0], (int)CyclonesPath[i][p][1]);
+                        gr.DrawLines(new Pen(new SolidBrush(Color.Red), 4), P);
+                    }
             }
 
             pictureBox1.Image = cadr;
@@ -408,7 +420,7 @@ namespace MeteoServer.Components.FileEditor
 
             for (int i = 0; i < rings.Count; i++)
             {
-                string tmp = rings[i].X + " " + rings[i].Y + " " + rings[i].R + " " + rings[i].VALUE;
+                string tmp = rings[i].X + " " + rings[i].Y + " " + rings[i].R + " " + rings[i].VALUE +" "+rings[i].CONDUCT;
 
                 Buffer[i+1] = tmp;
             }
@@ -459,6 +471,7 @@ namespace MeteoServer.Components.FileEditor
             tmp.Y = 100;
             tmp.R = 50;
             tmp.VALUE =Convert.ToDouble(textBox4.Text.ToString());
+            tmp.CONDUCT = Convert.ToDouble(textBox1.Text.ToString());
 
             rings.Add(tmp);
             ShowData();
