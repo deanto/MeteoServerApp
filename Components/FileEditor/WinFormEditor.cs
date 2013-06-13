@@ -370,14 +370,16 @@ namespace MeteoServer.Components.FileEditor
 
                             // теперь эти изменения добавим к траектории
                             if (CyclonesPath.Length!=0)
-                            if (CyclonesPath[selectedOne] != null)
+                                if (CyclonesPath[IntoPos] != null)
                             {
 
-                                for (int i = 0; i < CyclonesPath[selectedOne].Count - 1; i++)
+                                for (int i = 0; i < CyclonesPath[IntoPos].Count-1; i++)
                                 {
-                                    CyclonesPath[selectedOne][i][0] += Xchange;
-                                    CyclonesPath[selectedOne][i][1] += Ychange;
+                                    CyclonesPath[IntoPos][i][0] += Xchange;
+                                    CyclonesPath[IntoPos][i][1] += Ychange;
                                 }
+                                CyclonesPath[IntoPos][CyclonesPath[IntoPos].Count - 1][0] = CyclonesPath[IntoPos][0][0];
+                                CyclonesPath[IntoPos][CyclonesPath[IntoPos].Count - 1][1] = CyclonesPath[IntoPos][0][1];
                             }
 
                         }
@@ -542,6 +544,8 @@ namespace MeteoServer.Components.FileEditor
             {
                 // закончили редактировать путь для циклона
                 PATHEDIT = 0; 
+                
+
                 this.BackColor = Control.DefaultBackColor;
                 ShowData();
             }

@@ -26,7 +26,7 @@ namespace MeteoServer.Components.WeatherCalculating
         private int frames; // на сколько кадров вперед идет расчет
 
         // компонента отвечающая за расчет погоды
-        public void GetWeather(IUserID user, string map, string weather, double time)
+        public List<WeatherCadr> GetWeatherFromBegin(IUserID user, string map, string weather, double time)
         {
             frames = 50; // порция кадров
 
@@ -49,6 +49,11 @@ namespace MeteoServer.Components.WeatherCalculating
 
             // прочитаем карту сначала
 
+            string[] lines = mapBuffer[0].Split(default(string[]), StringSplitOptions.RemoveEmptyEntries);
+            wcalc.SetRect(Convert.ToDouble(lines[0]),Convert.ToDouble(lines[1]));
+            // установили размеры карты
+
+
             for (int i = 1; i < mapBuffer.Length; i++)
             {
 
@@ -58,8 +63,9 @@ namespace MeteoServer.Components.WeatherCalculating
                 double Y = Convert.ToDouble(lines1[1]);
                 double R = Convert.ToDouble(lines1[2]);
                 double VALUE = Convert.ToDouble(lines1[3]);
+                double COND = Convert.ToDouble(lines1[4]);
 
-                Land tmp = new Land(X, Y, R, VALUE);
+                Land tmp = new Land(X, Y, R, VALUE,COND);
 
                 wcalc.AddLand(tmp);
             }
@@ -79,8 +85,9 @@ namespace MeteoServer.Components.WeatherCalculating
                     double Y = Convert.ToDouble(lines1[1]);
                     double R = Convert.ToDouble(lines1[2]);
                     double VALUE = Convert.ToDouble(lines1[3]);
+                    double COND = Convert.ToDouble(lines1[4]);
 
-                    Cyclone tmp = new Cyclone(X, Y, R, VALUE);
+                    Cyclone tmp = new Cyclone(X, Y, R, VALUE,COND);
 
                     wcalc.AddWeather(tmp);
                 }
@@ -116,11 +123,15 @@ namespace MeteoServer.Components.WeatherCalculating
 
             }
 
-
             // все структуры заполнены
 
 
-
+            List<WeatherCadr> answer = new List<WeatherCadr>();
+            for (int i = 0; i < frames; i++)
+            {
+                answer.Add(wcalc.CalculateTact());// рассчитали такт еще один и положили в ролик
+            }
+            return answer;
 
             //  return workFrames;
         }
@@ -158,9 +169,14 @@ namespace MeteoServer.Components.WeatherCalculating
 
         private int time;
 
+        private double MapX,MapY;
         private List<Land> Land;// список элементов карты
         private List<Cyclone> Weather;// список элементов погоды
 
+        public void SetRect(double X,double Y)
+        {
+            MapX=X;MapY=Y;
+        }
         public void AddLand(Land s) { if (Land == null) Land = new List<Land>(); Land.Add(s); time = 0; }
         public void AddWeather(Cyclone s) { if (Weather == null) Weather = new List<Cyclone>(); Weather.Add(s);}
 
@@ -177,7 +193,7 @@ namespace MeteoServer.Components.WeatherCalculating
             double a=(Y1-Y2)/(X1-X2);
             double b=((Y1+Y2)-a*(X1+X2))/2;
 
-            if ((pointY == a * pointX + b) && (pointX > X1) && (pointX < X2)) return true;
+            if (  (Math.Abs(pointY - a * pointX + b)<=1) && (pointX > (int)X1) && (pointX < X2)) return true;
             else return false;
         }
 
@@ -186,18 +202,49 @@ namespace MeteoServer.Components.WeatherCalculating
             // учесть погоду от вклада этого циклона на такт вперед
             // так как пересечений с землей может быть много. вычислим для каждого  - потом сложим.
 
-
             // все пересечения рассмотрим и обменяемся теплом
+            /*
+             * сделаем так. заморозим температуру пока для циклона. 
+             * в каждом пересечении запомним сколько мы отдали или получили энергии - местность нагреем или остудим.
+             * потом все вместе сложим с замороженной температурой и положим как текущую.
+             */
+            double freez = Weather[cyclone].V; // запомнили
+            double finalE = 0;// количество энергии суммарное от всех пересечений + или - 
+            
             for (int i = 0; i < Land.Count; i++)
             { 
                 double S = IntersectionArea((IMapObject)Weather[cyclone],(IMapObject)Land[i]);
                 if (S!=0)
                 {
                     // значит пересекаются
-                 
-   
+                    double LandE = S * Land[i].V; // количество энергии у земли на этой площади
+                    double WeathE = S * Weather[cyclone].V; // количество энергии у циклона на этой площади
+
+                    double qs = (LandE + WeathE) / 2;// средняя
+
+                    // тот у кого энергия была меньше установившейся средней - получит тепло - разницу между тем что было и средней
+                    // тот у кого энергия была больше - отдаст энергию аналогично
+
+                    // полученная/принятая энергия умножается на коэффициент теплопроводности (0-100) % и вот именно это количество и получается
+
+                   
+                        double r = qs - WeathE; 
+                        r *= Weather[cyclone].C / 100; // это учли теплопроводность.
+                        finalE += r; // если разница положительная - то нагрелся циклон
+
+                        r = (qs - LandE) * Land[i].C / 100; // что получит или отдаст земля
+
+                        // энергия это площадь умноженная на температуру.
+
+                        double finalLand = r + LandE;  // вот сложили энергию
+                        Land[i].V = finalLand / Land[i].S;// распределили по всей площади энергию
+
                 }
             }
+
+            double finalWeather = finalE + freez * Weather[cyclone].S;
+            Weather[cyclone].V = finalWeather / Weather[cyclone].S; // распределили энергию по циклону.
+
 
         }
 
@@ -222,15 +269,17 @@ namespace MeteoServer.Components.WeatherCalculating
                 // сдвинуть в следующее положение нужно каждый циклон на 1/24 часть отрезка, на котором он сейчас находится.
                 // на сами точки границ отрезков тоже проверяем.
                 bool edit = false;
-                // проверим не находимся ли мы сейчас в начале какогонить отрезка
+                // проверим не находимся ли мы сейчас внутри какогонить отрезка
                 for (int p = 0; p < Weather[i].Path.Count; p++)
                 {
+
+                    // может мы в начале отрезка
                     if ((Weather[i].Path[p][0] == Weather[i].X) && (Weather[i].Path[p][1] == Weather[i].Y))
                     { 
                         // значит в начале этого отрезка
                         // сдвинем циклон на 1/24 часть этого отрезка
 
-                        double newX = Weather[i].Path[p][0]+(Weather[i].Path[p + 1][0] - Weather[i].Path[p][0]) / 24;
+                        double newX = Weather[i].Path[p][0]+  (Weather[i].Path[p + 1][0] - Weather[i].Path[p][0]) / 24;
                         double newY = Weather[i].Path[p][1] + (Weather[i].Path[p + 1][1] - Weather[i].Path[p][1]) / 24;
 
                         Weather[i].X = newX;
@@ -243,21 +292,41 @@ namespace MeteoServer.Components.WeatherCalculating
                         edit = true;
                         break;
                     }
+                    // может быть мы внутри этого отрезка
+
+                    int t = p + 1;
+                    if (t == Weather[i].Path.Count) t = 0;
+                    if (edit) continue;
+                    if (XYonSegment(Weather[i].X,Weather[i].Y,Weather[i].Path[p][0],Weather[i].Path[p][1], Weather[i].Path[t][0],Weather[i].Path[t][1]))
+                    {
+                        // значит внутри
+                        // можно узнать направление по каждой оси куда двигаемся по отрезку. и прибавить в эту сторону 1/24 часть длины отрезка!
+
+                        int x; if (Weather[i].Path[p][0] < Weather[i].Path[p + 1][0]) x = 1; else x = -1;
+                        int y; if (Weather[i].Path[p][1] < Weather[i].Path[p + 1][1]) y = 1; else y = -1;
+
+                        double newX = (Weather[i].Path[p][0] - Weather[i].Path[p + 1][0]) * (-1) * x / 24 + Weather[i].X;
+                        double newY = (Weather[i].Path[p][1] - Weather[i].Path[p + 1][1]) * (-1) * y / 24 + Weather[i].Y;
+
+                        Weather[i].X = newX;
+                        Weather[i].Y = newY;
+
+                        MakeWeather(i);
+                    }
+
                 }
-
-                if (!edit)
-                { 
-                    // значит этот циклон не в начале отрезка.
-                    //  нужно найти на каком отрезке и сдвинуть еще
-
-                }
-
 
             }
+            // сменили положение на один такт-час
 
-                return null;
+            time++;
+
+            WeatherCadr cadr = new WeatherCadr(Land, Weather);
+
+                return cadr;
         }
 
+        
     }
 
     public interface IMapObject
@@ -265,16 +334,19 @@ namespace MeteoServer.Components.WeatherCalculating
        double X { get; set;}
        double Y { get; set;}
        double R { get; set;}
+       double V { get; set; }
+       
     }
 
     public abstract class AMapObject:IMapObject
     { 
         // этот класс содержит общую информацию для каждого объекта на карте.
-        private double x, y, r, value; // характеристики объекта
+        private double x, y, r, value,c; // характеристики объекта
         public double X { get { return x; } set { x = value; } }
         public double Y { get { return y; } set { y = value; } }
         public double R { get { return r; } set { r = value; } }
         public double V { get { return value; } set { this.value = value; } }
+        public double C { get { return c; } set { c = value; } }
 
         public double S { get { return Math.PI * r * r; } }// площадь
 	
@@ -282,17 +354,17 @@ namespace MeteoServer.Components.WeatherCalculating
 
     public class Land : AMapObject
    {// либо гора либо низина
-       public Land(double x, double y, double r, double v)
+       public Land(double x, double y, double r, double v,double c)
        {
-           X = x; Y = y; R = r; V = v;
+           X = x; Y = y; R = r; V = v; C = c;
        }
    }
 
     public class Cyclone : AMapObject
    {// циклон
-       public Cyclone(double x, double y, double r, double v)
+       public Cyclone(double x, double y, double r, double v,double c)
        {
-           X = x; Y = y; R = r; V = v; 
+           X = x; Y = y; R = r; V = v; C = c;
            
        }
        private List<double[]> CyclonesPath; // по точкам - движение циклона. будем считать, что один отрезок в день двигается.
@@ -309,9 +381,30 @@ namespace MeteoServer.Components.WeatherCalculating
         // их заполним в при расчете погды.
         // наружу и отдадим их тогда. 
 
-        public WeatherCadr(List<IMapObject> Land,List<IMapObject> Weather)
-        {
-            MyLand=Land; MyWeather=Weather;
+        public WeatherCadr(List<Land> Land,List<Cyclone> Weather)
+        {// принимаем местность и погоду.
+            // не по ссылке возьмем а скопируем
+
+
+            //MyLand=Land;
+            MyLand = new List<IMapObject>();
+            for (int i = 0; i < Land.Count; i++)
+            { 
+                IMapObject tmp = new Land(Land[i].X,Land[i].Y,Land[i].R,Land[i].V,0);
+                MyLand.Add(tmp);
+            }
+            
+            
+            
+            
+            //MyWeather=Weather;
+            MyWeather = new List<IMapObject>();
+            for (int i = 0; i < Weather.Count; i++)
+            { 
+                IMapObject tmp = new Land(Weather[i].X,Weather[i].Y,Weather[i].R,Weather[i].V,0);
+                MyWeather.Add(tmp);
+            }
+
         }
 
         public List<IMapObject> Land{get{return MyLand;}}

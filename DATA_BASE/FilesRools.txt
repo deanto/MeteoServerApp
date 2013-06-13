@@ -1,3 +1,5 @@
 DATA_BASE\Files\Russia\map.txt all
 DATA_BASE\Files\Russia\weather.txt all
 DATA_BASE\Files\Russia\weather1.txt all
+DATA_BASE\Files\Public\Russia\map.txt all
+DATA_BASE\Files\Public\Russia\weather.txt all
