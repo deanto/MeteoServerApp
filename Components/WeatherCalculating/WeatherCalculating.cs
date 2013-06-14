@@ -131,6 +131,7 @@ namespace MeteoServer.Components.WeatherCalculating
             {
                 answer.Add(wcalc.CalculateTact());// рассчитали такт еще один и положили в ролик
             }
+
             return answer;
 
             //  return workFrames;
@@ -189,12 +190,19 @@ namespace MeteoServer.Components.WeatherCalculating
         private bool XYonSegment(double pointX, double pointY, double X1, double Y1, double X2, double Y2)
         {
             // принадлежит ли точка отрезку
+            // посчитаем следующим образом - найдем расстояние от нашей точки до каждой границы отрезка
+            // если сумма расстояний почти равна длине отрезка - точка почти на отрезке)
 
-            double a=(Y1-Y2)/(X1-X2);
-            double b=((Y1+Y2)-a*(X1+X2))/2;
 
-            if (  (Math.Abs(pointY - a * pointX + b)<=1) && (pointX > (int)X1) && (pointX < X2)) return true;
-            else return false;
+            double d1 = Math.Sqrt((pointX - X1) * (pointX - X1) + (pointY - Y1) * (pointY - Y1));
+            double d2 = Math.Sqrt((pointX - X2) * (pointX - X2) + (pointY - Y2) * (pointY - Y2));
+
+            double d = Math.Sqrt((X1 - X2) * (X1 - X2) + (Y1 - Y2) * (Y1 - Y2));
+
+            if (Math.Abs((d1 + d2) - d) < 1) // если разница меньше 1 то точка почти на отрезке
+                return true; 
+
+            return false;
         }
 
         private void MakeWeather(int cyclone)

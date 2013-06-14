@@ -510,11 +510,37 @@ namespace MeteoServer.Components.FileEditor
         }
 
         private void button3_Click(object sender, EventArgs e)
-        {
+        {// удалить циклон
             if (selectedOne != -1)
             {
                 rings.RemoveAt(selectedOne);
-                ShowData();
+
+
+                List<double[]>[] newCycl = new List<double[]>[CyclonesPath.Length - 1];
+
+                int w = 0;
+
+                for (int i = 0; i < CyclonesPath.Length; i++)
+                {
+                    List<double[]> tmp1 = new List<double[]>();
+                    for (int q = 0; q < CyclonesPath[i].Count; q++)
+                    {
+                        double[] tmp3 = new double[2];
+                        tmp3[0] = CyclonesPath[i][q][0];
+                        tmp3[1] = CyclonesPath[i][q][1];
+
+                        tmp1.Add(tmp3);
+                    }
+                    if (i != selectedOne) 
+                    {
+                        newCycl[w] = tmp1; 
+                        w++;
+                    } 
+                }
+                CyclonesPath = newCycl;
+
+
+                    ShowData();
             }
         }
 
