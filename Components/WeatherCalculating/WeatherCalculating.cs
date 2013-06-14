@@ -282,10 +282,14 @@ namespace MeteoServer.Components.WeatherCalculating
                 {
 
                     // может мы в начале отрезка
-                    if ((Weather[i].Path[p][0] == Weather[i].X) && (Weather[i].Path[p][1] == Weather[i].Y))
+                    //if ((Weather[i].Path[p][0] == Weather[i].X) && (Weather[i].Path[p][1] == Weather[i].Y))
+                    if (Math.Abs(Weather[i].Path[p][0] - Weather[i].X) < 1 && Math.Abs(Weather[i].Path[p][1] - Weather[i].Y)<1)
                     { 
                         // значит в начале этого отрезка
                         // сдвинем циклон на 1/24 часть этого отрезка
+
+                        Weather[i].X = Weather[i].Path[p][0];
+                        Weather[i].Y = Weather[i].Path[p][1];
 
                         double newX = Weather[i].Path[p][0]+  (Weather[i].Path[p + 1][0] - Weather[i].Path[p][0]) / 24;
                         double newY = Weather[i].Path[p][1] + (Weather[i].Path[p + 1][1] - Weather[i].Path[p][1]) / 24;
@@ -313,8 +317,8 @@ namespace MeteoServer.Components.WeatherCalculating
                         int x; if (Weather[i].Path[p][0] < Weather[i].Path[p + 1][0]) x = 1; else x = -1;
                         int y; if (Weather[i].Path[p][1] < Weather[i].Path[p + 1][1]) y = 1; else y = -1;
 
-                        double newX = (Weather[i].Path[p][0] - Weather[i].Path[p + 1][0]) * (-1) * x / 24 + Weather[i].X;
-                        double newY = (Weather[i].Path[p][1] - Weather[i].Path[p + 1][1]) * (-1) * y / 24 + Weather[i].Y;
+                        double newX = Math.Abs(Weather[i].Path[p][0] - Weather[i].Path[p + 1][0])  * x / 24 + Weather[i].X;
+                        double newY = Math.Abs(Weather[i].Path[p][1] - Weather[i].Path[p + 1][1])  * y / 24 + Weather[i].Y;
 
                         Weather[i].X = newX;
                         Weather[i].Y = newY;
@@ -329,7 +333,7 @@ namespace MeteoServer.Components.WeatherCalculating
 
             time++;
 
-            WeatherCadr cadr = new WeatherCadr(Land, Weather);
+            WeatherCadr cadr = new WeatherCadr(Land, Weather,MapX,MapY);
 
                 return cadr;
         }
@@ -382,17 +386,23 @@ namespace MeteoServer.Components.WeatherCalculating
     public class WeatherCadr
     { // Этот класс содержит в себе данные о погоде.
       // по идее у нас циклоны и горы не всегда круглые, поэтому тут будет два хранилища. одно для объектов земли, другой - для погоды.
-        
+
+        private double X, Y; // размеры кадра
+        public double height { get { return Y; }  }
+        public double weight { get { return X; }  }
+
 
         private List<IMapObject> MyLand;// список элементов карты
         private List<IMapObject> MyWeather;// список элементов погоды
         // их заполним в при расчете погды.
         // наружу и отдадим их тогда. 
 
-        public WeatherCadr(List<Land> Land,List<Cyclone> Weather)
+        public WeatherCadr(List<Land> Land,List<Cyclone> Weather,double x,double y)
         {// принимаем местность и погоду.
             // не по ссылке возьмем а скопируем
 
+            X = x;
+            Y = y;
 
             //MyLand=Land;
             MyLand = new List<IMapObject>();

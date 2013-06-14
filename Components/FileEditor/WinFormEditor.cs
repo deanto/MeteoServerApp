@@ -539,7 +539,6 @@ namespace MeteoServer.Components.FileEditor
                 }
                 CyclonesPath = newCycl;
 
-
                     ShowData();
             }
         }
