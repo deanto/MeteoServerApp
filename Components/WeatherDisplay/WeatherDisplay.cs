@@ -19,6 +19,7 @@ namespace MeteoServer.Components.WeatherDisplay
         public ADisplayer()
         {
             wc = new WeatherCalculating.WeatherCalculating();
+            
         }
 
     }

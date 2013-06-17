@@ -218,6 +218,16 @@ namespace MeteoServer.Components.FileManagement
         {
 
         }
+
+        private void button5_Click_1(object sender, EventArgs e)
+        {
+            WeatherDisplay.winfomfDisplayer player = new WeatherDisplay.winfomfDisplayer();
+
+            string p = @"DATA_BASE\Files\Public\Russia\map.txt";
+            string d = @"DATA_BASE\Files\Public\Russia\weather.txt";
+
+            player.ShowWeather(current, p, d);
+        }
         
     }
 }
