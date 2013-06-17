@@ -156,9 +156,20 @@ namespace MeteoServer.Components.WeatherCalculating
             if (a.R + b.R <= D) return 0;
 
             double F1, F2;
-            
+
+
+            if (((a.R * a.R - b.R * b.R + D * D) / (2 * a.R * D)) > 1 || (b.R * b.R - a.R * a.R + D * D) / (2 * b.R * D) > 1)
+            {
+                double sS1 = a.R * a.R * 2 * Math.PI;
+                double sS2 = b.R * b.R * 2 * Math.PI;
+
+                if (sS1 > sS2) return sS2; else return sS1;
+            }
+
             F1 = 2 * Math.Acos((a.R * a.R - b.R * b.R + D * D) / (2 * a.R * D));
             F2 = 2 * Math.Acos((b.R * b.R - a.R * a.R + D * D) / (2 * b.R * D));
+
+            
 
             double S1, S2;
 
@@ -218,13 +229,17 @@ namespace MeteoServer.Components.WeatherCalculating
              */
             double freez = Weather[cyclone].V; // запомнили
             double finalE = 0;// количество энергии суммарное от всех пересечений + или - 
-            
+
+            bool flag = false;
+
             for (int i = 0; i < Land.Count; i++)
             { 
                 double S = IntersectionArea((IMapObject)Weather[cyclone],(IMapObject)Land[i]);
                 if (S!=0)
                 {
                     // значит пересекаются
+                    flag = true;
+
                     double LandE = S * Land[i].V; // количество энергии у земли на этой площади
                     double WeathE = S * Weather[cyclone].V; // количество энергии у циклона на этой площади
 
@@ -244,20 +259,26 @@ namespace MeteoServer.Components.WeatherCalculating
 
                         // энергия это площадь умноженная на температуру.
 
-                        double finalLand = r + LandE;  // вот сложили энергию
+                        double finalLand = r + Land[i].V*Land[i].S;  // вот сложили энергию
                         Land[i].V = finalLand / Land[i].S;// распределили по всей площади энергию
 
                 }
             }
 
-            double finalWeather = finalE + freez * Weather[cyclone].S;
-            Weather[cyclone].V = finalWeather / Weather[cyclone].S; // распределили энергию по циклону.
+            if (flag)
+            {
+                double finalWeather = finalE + freez * Weather[cyclone].S;
+                Weather[cyclone].V = finalWeather / Weather[cyclone].S; // распределили энергию по циклону.
+            }
 
 
         }
 
         public WeatherCadr CalculateTact()
         {
+
+            int cadrPerLine = 10;
+
             //рассчитываем кадр исходя их текущих данных и возвращаем копию текущего состоянияю
 
             /*
@@ -278,7 +299,7 @@ namespace MeteoServer.Components.WeatherCalculating
                 // на сами точки границ отрезков тоже проверяем.
                 bool edit = false;
                 // проверим не находимся ли мы сейчас внутри какогонить отрезка
-                for (int p = 0; p < Weather[i].Path.Count; p++)
+                for (int p = 0; p < Weather[i].Path.Count-1; p++)
                 {
 
                     // может мы в начале отрезка
@@ -291,8 +312,8 @@ namespace MeteoServer.Components.WeatherCalculating
                         Weather[i].X = Weather[i].Path[p][0];
                         Weather[i].Y = Weather[i].Path[p][1];
 
-                        double newX = Weather[i].Path[p][0]+  (Weather[i].Path[p + 1][0] - Weather[i].Path[p][0]) / 24;
-                        double newY = Weather[i].Path[p][1] + (Weather[i].Path[p + 1][1] - Weather[i].Path[p][1]) / 24;
+                        double newX = Weather[i].Path[p][0] + (Weather[i].Path[p + 1][0] - Weather[i].Path[p][0]) / cadrPerLine;
+                        double newY = Weather[i].Path[p][1] + (Weather[i].Path[p + 1][1] - Weather[i].Path[p][1]) / cadrPerLine;
 
                         Weather[i].X = newX;
                         Weather[i].Y = newY;
@@ -317,8 +338,8 @@ namespace MeteoServer.Components.WeatherCalculating
                         int x; if (Weather[i].Path[p][0] < Weather[i].Path[p + 1][0]) x = 1; else x = -1;
                         int y; if (Weather[i].Path[p][1] < Weather[i].Path[p + 1][1]) y = 1; else y = -1;
 
-                        double newX = Math.Abs(Weather[i].Path[p][0] - Weather[i].Path[p + 1][0])  * x / 24 + Weather[i].X;
-                        double newY = Math.Abs(Weather[i].Path[p][1] - Weather[i].Path[p + 1][1])  * y / 24 + Weather[i].Y;
+                        double newX = Math.Abs(Weather[i].Path[p][0] - Weather[i].Path[p + 1][0]) * x / cadrPerLine + Weather[i].X;
+                        double newY = Math.Abs(Weather[i].Path[p][1] - Weather[i].Path[p + 1][1]) * y / cadrPerLine + Weather[i].Y;
 
                         Weather[i].X = newX;
                         Weather[i].Y = newY;

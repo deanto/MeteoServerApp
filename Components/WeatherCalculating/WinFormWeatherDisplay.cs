@@ -28,6 +28,46 @@ namespace MeteoServer.Components.WeatherCalculating
 
         List<WeatherCadr> initialvideo; // ролик в начале.
 
+
+
+        // данные для отображения видео
+        List<WeatherCadr> currentBlock; // тут хранится видео, которое сейчас отображается
+        int currentBlockStartTime;      // начальный момент времени для этого ролика
+        int currentBlockFrames;         // сколько кадров в этом ролике
+        int currentBlockCurrentCadr;    // какой кадр мы смотрим в данный момент
+        //-----------------------------
+
+        
+        // блок функций работы со строкой состояния
+        int progressStep = 5; // сколько пикселей на кадр 
+        void ProgressClean()
+        {
+            
+            label3.Text = "0";
+            label4.Text = Convert.ToString((int)((double)progress.Width / (double)progressStep));
+
+            Bitmap p = new Bitmap(progress.Width, progress.Height);
+            Graphics gp = Graphics.FromImage(p);
+            gp.FillRectangle(new SolidBrush(Color.WhiteSmoke), 0, 0, progress.Width, progress.Height);
+            gp.DrawLine(new Pen(new SolidBrush(Color.Purple), progressStep), 0, 0, 0, progress.Width);
+
+            progress.Image = p;
+
+        }
+        void ProgressSetTime(int time)
+        {
+            Bitmap p = new Bitmap(progress.Width, progress.Height);
+            Graphics gp = Graphics.FromImage(p);
+            gp.FillRectangle(new SolidBrush(Color.WhiteSmoke), 0, 0, progress.Width, progress.Height);
+            gp.DrawLine(new Pen(new SolidBrush(Color.Purple), progressStep), time * progressStep, 0, time * progressStep, progress.Width);
+            gp.DrawString(time.ToString(), new Font("Arial", 10), new SolidBrush(Color.Purple), (float)(time * progressStep + 3),4);
+
+            progress.Image = p;
+        }
+        //-----------------------------
+
+
+
         public WinFormWeatherDisplay()
         {
             InitializeComponent();
@@ -41,11 +81,6 @@ namespace MeteoServer.Components.WeatherCalculating
         }
 
 
-        
-
-
-
-
         Thread th; 
 
         void ShowVideoThreaded()
@@ -54,28 +89,41 @@ namespace MeteoServer.Components.WeatherCalculating
             th.Start();
         }
         
-       void ShowVideo()
-        {
+        void ShowVideo()
+        {// смотреть видео с указанного начального кадра в currentBlock
+            // это значит мы можем внутри currentBlock начинать смотреть с любого кадра.
 
-            for (int i = 0; i < initialvideo.Count; i++)
+            for (int i = currentBlockCurrentCadr; i < currentBlock.Count; i++)
             {
 
-                WeatherCadr now = initialvideo[i];
-
+                WeatherCadr now = currentBlock[i];
                 Bitmap cadr = new Bitmap((int)now.height, (int)now.weight);
-
-               
                 Graphics g = Graphics.FromImage(cadr);
 
-                g.FillRectangle(new SolidBrush(Color.White), 0, 0, cadr.Width, cadr.Height);
+
+                //// очистим
+                //g.FillRectangle(new SolidBrush(Color.White), 0, 0, cadr.Width, cadr.Height);
+                //pictureBox1.Image = cadr;
+
+                // нарисуем землю
+                for (int l = 0; l < now.Land.Count; l++)
+                {
+                    g.FillEllipse(new SolidBrush(Color.DarkMagenta), (int)now.Land[l].X - (int)(now.Land[l].R), (int)now.Land[l].Y - (int)(now.Land[l].R), (int)now.Land[l].R * 2, (int)now.Land[l].R * 2);
+                    g.DrawString(Convert.ToString(now.Land[l].V), new Font("Arial", 10), new SolidBrush(Color.Aqua), (int)now.Land[l].X, (int)now.Land[l].Y);
+
+                }
+                    // нарисуем циклоны
+
+                for (int w = 0; w < now.Weather.Count; w++)
+                {
+                    g.FillEllipse(new SolidBrush(Color.DarkGray), (int)now.Weather[w].X - (int)(now.Weather[w].R), (int)now.Weather[w].Y - (int)(now.Weather[w].R), (int)now.Weather[w].R * 2, (int)now.Weather[w].R * 2);
+                    g.DrawString(Convert.ToString(now.Weather[w].V), new Font("Arial", 10), new SolidBrush(Color.Black), (int)now.Weather[w].X, (int)now.Weather[w].Y);
+                }
+
 
                 pictureBox1.Image = cadr;
-                
-                g.FillRectangle(new SolidBrush(Color.Red), (int)now.Weather[0].X, (int)now.Weather[0].Y, (int)now.Weather[0].R, (int)now.Weather[0].R);
 
-                pictureBox1.Image = cadr;
-               // pictureBox1.Refresh();
-                
+                ProgressSetTime(i);
 
                 System.Threading.Thread.Sleep(Convert.ToInt32(textBox1.Text));
             }
@@ -85,8 +133,14 @@ namespace MeteoServer.Components.WeatherCalculating
         {
             if (th != null)
                 th.Abort();
-            
-            
+
+            currentBlock = initialvideo;
+            currentBlockCurrentCadr = 0;
+            currentBlockFrames = currentBlock.Count;
+            currentBlockStartTime = 0;
+
+
+            ProgressClean();
 
             ShowVideoThreaded();
         }

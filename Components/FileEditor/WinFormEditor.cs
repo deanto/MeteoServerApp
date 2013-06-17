@@ -479,32 +479,33 @@ namespace MeteoServer.Components.FileEditor
 
             rings.Add(tmp);
             // когда создаем круги - нужно под пути создать место.
-
-            List<double[]>[] NewCyclonesPath = new List<double[]>[CyclonesPath.Length+1];
-
-            // копируем туда данные
             if (CyclonesPath.Length != 0)
             {
-                for (int i = 0; i < CyclonesPath.Length; i++)
+                List<double[]>[] NewCyclonesPath = new List<double[]>[CyclonesPath.Length + 1];
+
+                // копируем туда данные
+                if (CyclonesPath[CyclonesPath.Length-1] != null)
                 {
-                    List<double[]> tmp1 = new List<double[]>();
-                    for (int q = 0; q < CyclonesPath[i].Count; q++)
+                    for (int i = 0; i < CyclonesPath.Length; i++)
                     {
-                        double[] tmp3 = new double[2];
-                        tmp3[0] = CyclonesPath[i][q][0];
-                        tmp3[1] = CyclonesPath[i][q][1];
+                        List<double[]> tmp1 = new List<double[]>();
+                        for (int q = 0; q < CyclonesPath[i].Count; q++)
+                        {
+                            double[] tmp3 = new double[2];
+                            tmp3[0] = CyclonesPath[i][q][0];
+                            tmp3[1] = CyclonesPath[i][q][1];
 
-                        tmp1.Add(tmp3);
+                            tmp1.Add(tmp3);
+                        }
+                        NewCyclonesPath[i] = tmp1;
                     }
-                    NewCyclonesPath[i] = tmp1;
+
+                    NewCyclonesPath[CyclonesPath.Length] = null;
                 }
+                else NewCyclonesPath[0] = null;
 
-                NewCyclonesPath[CyclonesPath.Length] = null;
+                CyclonesPath = NewCyclonesPath;
             }
-            else NewCyclonesPath[0] = null;
-
-            CyclonesPath = NewCyclonesPath;
-
             ShowData();
 
         }
@@ -515,30 +516,32 @@ namespace MeteoServer.Components.FileEditor
             {
                 rings.RemoveAt(selectedOne);
 
-
-                List<double[]>[] newCycl = new List<double[]>[CyclonesPath.Length - 1];
-
-                int w = 0;
-
-                for (int i = 0; i < CyclonesPath.Length; i++)
+                if (CyclonesPath[selectedOne] != null)
                 {
-                    List<double[]> tmp1 = new List<double[]>();
-                    for (int q = 0; q < CyclonesPath[i].Count; q++)
-                    {
-                        double[] tmp3 = new double[2];
-                        tmp3[0] = CyclonesPath[i][q][0];
-                        tmp3[1] = CyclonesPath[i][q][1];
 
-                        tmp1.Add(tmp3);
+                    List<double[]>[] newCycl = new List<double[]>[CyclonesPath.Length - 1];
+
+                    int w = 0;
+
+                    for (int i = 0; i < CyclonesPath.Length; i++)
+                    {
+                        List<double[]> tmp1 = new List<double[]>();
+                        for (int q = 0; q < CyclonesPath[i].Count; q++)
+                        {
+                            double[] tmp3 = new double[2];
+                            tmp3[0] = CyclonesPath[i][q][0];
+                            tmp3[1] = CyclonesPath[i][q][1];
+
+                            tmp1.Add(tmp3);
+                        }
+                        if (i != selectedOne)
+                        {
+                            newCycl[w] = tmp1;
+                            w++;
+                        }
                     }
-                    if (i != selectedOne) 
-                    {
-                        newCycl[w] = tmp1; 
-                        w++;
-                    } 
+                    CyclonesPath = newCycl;
                 }
-                CyclonesPath = newCycl;
-
                     ShowData();
             }
         }
@@ -556,7 +559,7 @@ namespace MeteoServer.Components.FileEditor
                 // очистим предыдущий путь и начнем заново.
                 // первая и последняя точки в пути - центр циклона
 
-               
+                if (CyclonesPath.Length == 0) CyclonesPath = new List<double[]>[1];
 
                 CyclonesPath[selectedOne] = new List<double[]>();
                 CyclonesPath[selectedOne].Add(new double[2] { rings[selectedOne].X,rings[selectedOne].Y,});
