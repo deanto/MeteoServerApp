@@ -26,7 +26,7 @@ namespace MeteoServer.Components.WeatherCalculating
         private int frames; // на сколько кадров вперед идет расчет
 
         // компонента отвечающая за расчет погоды
-        public List<WeatherCadr> GetWeatherFromBegin(IUserID user, string map, string weather, double time)
+        public List<WeatherCadr> GetWeatherFromBegin(IUserID user, string map, string weather)
         {
             frames = 50; // порция кадров
 

@@ -74,6 +74,13 @@
     </Compile>
     <Compile Include="Components\UserManagement\IUserManagement.cs" />
     <Compile Include="Components\WeatherCalculating\WeatherCalculating.cs" />
+    <Compile Include="Components\WeatherCalculating\WinFormWeatherDisplay.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Components\WeatherCalculating\WinFormWeatherDisplay.Designer.cs">
+      <DependentUpon>WinFormWeatherDisplay.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Components\WeatherDisplay\WeatherDisplay.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -104,6 +111,9 @@
     <EmbeddedResource Include="Components\ServerView\ServerView.resx">
       <DependentUpon>ServerView.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Components\WeatherCalculating\WinFormWeatherDisplay.resx">
+      <DependentUpon>WinFormWeatherDisplay.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -131,9 +141,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Components\WeatherDisplay\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="DATA_BASE\FilesRools.txt" />
     <Content Include="DATA_BASE\PresentUsers.txt" />
