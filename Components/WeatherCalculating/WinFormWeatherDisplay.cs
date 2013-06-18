@@ -51,6 +51,8 @@ namespace MeteoServer.Components.WeatherCalculating
             gp.FillRectangle(new SolidBrush(Color.WhiteSmoke), 0, 0, progress.Width, progress.Height);
             gp.DrawLine(new Pen(new SolidBrush(Color.Purple), progressStep), 0, 0, 0, progress.Width);
 
+
+
             progress.Image = p;
 
         }
@@ -77,7 +79,7 @@ namespace MeteoServer.Components.WeatherCalculating
         private void WinFormWeatherDisplay_Load(object sender, EventArgs e)
         {
             initialvideo = wc.GetWeatherFromBegin(user, map, weather);
-            
+            ProgressClean();
         }
 
 

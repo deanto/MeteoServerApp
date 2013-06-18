@@ -37,10 +37,10 @@
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.button6 = new System.Windows.Forms.Button();
+            this.button5 = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.button5 = new System.Windows.Forms.Button();
-            this.button6 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.progress)).BeginInit();
             this.panel1.SuspendLayout();
@@ -138,6 +138,26 @@
             this.panel1.Size = new System.Drawing.Size(753, 657);
             this.panel1.TabIndex = 10;
             // 
+            // button6
+            // 
+            this.button6.Location = new System.Drawing.Point(362, 546);
+            this.button6.Name = "button6";
+            this.button6.Size = new System.Drawing.Size(21, 20);
+            this.button6.TabIndex = 13;
+            this.button6.Text = "-";
+            this.button6.UseVisualStyleBackColor = true;
+            this.button6.Click += new System.EventHandler(this.button6_Click);
+            // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(425, 546);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(21, 20);
+            this.button5.TabIndex = 12;
+            this.button5.Text = "+";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
+            // 
             // label5
             // 
             this.label5.AutoSize = true;
@@ -155,31 +175,11 @@
             this.textBox1.TabIndex = 10;
             this.textBox1.Text = "100";
             // 
-            // button5
-            // 
-            this.button5.Location = new System.Drawing.Point(425, 546);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(21, 20);
-            this.button5.TabIndex = 12;
-            this.button5.Text = "+";
-            this.button5.UseVisualStyleBackColor = true;
-            this.button5.Click += new System.EventHandler(this.button5_Click);
-            // 
-            // button6
-            // 
-            this.button6.Location = new System.Drawing.Point(362, 546);
-            this.button6.Name = "button6";
-            this.button6.Size = new System.Drawing.Size(21, 20);
-            this.button6.TabIndex = 13;
-            this.button6.Text = "-";
-            this.button6.UseVisualStyleBackColor = true;
-            this.button6.Click += new System.EventHandler(this.button6_Click);
-            // 
             // WinFormWeatherDisplay
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1331, 678);
+            this.ClientSize = new System.Drawing.Size(818, 678);
             this.Controls.Add(this.panel1);
             this.Name = "WinFormWeatherDisplay";
             this.Text = "WinFormWeatherDisplay";

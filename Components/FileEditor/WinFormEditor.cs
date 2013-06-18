@@ -92,6 +92,7 @@ namespace MeteoServer.Components.FileEditor
                         tmp.Y = Convert.ToDouble(lines1[1]);
                         tmp.R = Convert.ToDouble(lines1[2]);
                         tmp.VALUE = Convert.ToDouble(lines1[3]);
+                        tmp.CONDUCT = Convert.ToDouble(lines1[4]);
 
 
                         BackGroundrings.Add(tmp);
@@ -115,7 +116,7 @@ namespace MeteoServer.Components.FileEditor
                     tmp.Y = Convert.ToDouble(lines[1]);
                     tmp.R = Convert.ToDouble(lines[2]);
                     tmp.VALUE = Convert.ToDouble(lines[3]);
-
+                    tmp.CONDUCT = Convert.ToDouble(lines[4]);
 
                     rings.Add(tmp);
                 }
@@ -251,7 +252,7 @@ namespace MeteoServer.Components.FileEditor
                 for (int i = 0; i < BackGroundrings.Count; i++)
                 {
                     gr1.FillEllipse(new SolidBrush(Color.FromArgb((int)BackGroundrings[i].VALUE, (int)BackGroundrings[i].VALUE, (int)BackGroundrings[i].VALUE)), (int)BackGroundrings[i].X - (int)(BackGroundrings[i].R), (int)BackGroundrings[i].Y - (int)(BackGroundrings[i].R), (int)BackGroundrings[i].R * 2, (int)BackGroundrings[i].R * 2);
-                    gr1.DrawString(Convert.ToString(BackGroundrings[i].VALUE), new Font("Arial", 5), new SolidBrush(Color.Black), (int)BackGroundrings[i].X, (int)BackGroundrings[i].Y);
+                    gr1.DrawString(Convert.ToString(BackGroundrings[i].VALUE)+":"+Convert.ToString(BackGroundrings[i].CONDUCT), new Font("Arial", 5), new SolidBrush(Color.Black), (int)BackGroundrings[i].X, (int)BackGroundrings[i].Y);
 
 
                 }
@@ -271,7 +272,7 @@ namespace MeteoServer.Components.FileEditor
             for (int i = 0; i < rings.Count; i++)
             {
                 gr.FillEllipse(new SolidBrush(Color.FromArgb((int)rings[i].VALUE, 255 - (int)rings[i].VALUE, 255 - (int)rings[i].VALUE)), (int)rings[i].X - (int)(rings[i].R), (int)rings[i].Y - (int)(rings[i].R), (int)rings[i].R*2, (int)rings[i].R*2);
-                gr.DrawString(Convert.ToString(rings[i].VALUE), new Font("Arial", 10), new SolidBrush(Color.Black), (int)rings[i].X,(int)rings[i].Y);
+                gr.DrawString(Convert.ToString(rings[i].VALUE)+":"+Convert.ToString(rings[i].CONDUCT), new Font("Arial", 10), new SolidBrush(Color.Black), (int)rings[i].X,(int)rings[i].Y);
 
                 if (selectedOne == i) gr.DrawEllipse(new Pen(new SolidBrush(Color.Black),10), (int)rings[i].X - (int)(rings[i].R), (int)rings[i].Y - (int)(rings[i].R), (int)rings[i].R * 2, (int)rings[i].R * 2);
             
