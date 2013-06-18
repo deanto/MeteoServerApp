@@ -46,6 +46,7 @@ namespace MeteoServer.Components.WeatherCalculating
             //
             // прочитаем заполним структуры в  WeatherCalculator
             WeatherCalculator wcalc = new WeatherCalculator();
+            wcalc.setTime = 0;
 
             // прочитаем карту сначала
 
@@ -136,6 +137,91 @@ namespace MeteoServer.Components.WeatherCalculating
 
             //  return workFrames;
         }
+        public List<WeatherCadr> GetWeatherFromCadr(WeatherCadr cadr,int time, IUserID user, string weather)
+        {
+            frames = 50; // порция кадров
+
+            // нам нужно в память загрузить кадо
+
+            WeatherCalculator wcalc = new WeatherCalculator();
+            wcalc.setTime = time;
+            // добавим землю
+            for (int i = 0; i < cadr.Land.Count; i++)
+            {
+                Land t=(Land)cadr.Land[i];
+                Land tmp = new Land(t.X, t.Y, t.R, t.V, t.C);
+                wcalc.AddLand(tmp);
+            }
+            // добавим циклоны
+            for (int i = 0; i < cadr.Weather.Count; i++)
+            {
+                Cyclone t = (Cyclone)cadr.Weather[i];
+                Cyclone tmp = new Cyclone(t.X, t.Y, t.R, t.V, t.C);
+                wcalc.AddWeather(tmp);
+            }
+
+
+
+
+
+            // добавим траектории циклонов
+            FileManagement.FileManager fm = Fabric.GetFileManager();
+            string[] weatherBuffer = fm.GetThisFile(user, weather);// буффер погоды
+
+            string[] lines = weatherBuffer[0].Split(default(string[]), StringSplitOptions.RemoveEmptyEntries);
+            wcalc.SetRect(Convert.ToDouble(lines[0]), Convert.ToDouble(lines[1]));
+
+
+            int pos = 0;
+            for (int i = 1; i < weatherBuffer.Length; i++)
+            {
+                string[] lines1 = weatherBuffer[i].Split(default(string[]), StringSplitOptions.RemoveEmptyEntries);
+
+                if (lines1.Length == 0) // это условие отбросит строчки после пустой(траектории там для циклонов, если это погода)
+                {
+                    pos = i; break; 
+                }
+            }
+
+            if (pos != 0)
+            {
+                pos++;
+
+                for (int i = 0; i < weatherBuffer.Length - pos; i++)
+                {
+
+                    if (weatherBuffer[i + pos].Length != 0)
+                    {
+                        List<double[]> add = new List<double[]>();
+
+                        string[] tmp = weatherBuffer[i + pos].Split(default(string[]), StringSplitOptions.RemoveEmptyEntries);
+
+                        for (int t = 0; t < tmp.Length; t += 2)
+                        {
+
+                            add.Add(new double[2] { Convert.ToDouble(tmp[t]), Convert.ToDouble(tmp[t + 1]) });
+
+                        }
+                        wcalc.AddWeatherPath(i, add);
+                    }
+
+                }
+
+            }
+
+            // все заполнили
+
+
+            List<WeatherCadr> answer = new List<WeatherCadr>();
+
+            for (int i = 0; i < frames; i++)
+            {
+                answer.Add(wcalc.CalculateTact());// рассчитали такт еще один и положили в ролик
+            }
+
+            return answer;
+
+        }
     }
 
     class WeatherCalculator
@@ -180,6 +266,7 @@ namespace MeteoServer.Components.WeatherCalculating
         }
 
         private int time;
+        public int setTime { set { time = value; } }
 
         private double MapX,MapY;
         private List<Land> Land;// список элементов карты
@@ -189,7 +276,7 @@ namespace MeteoServer.Components.WeatherCalculating
         {
             MapX=X;MapY=Y;
         }
-        public void AddLand(Land s) { if (Land == null) Land = new List<Land>(); Land.Add(s); time = 0; }
+        public void AddLand(Land s) { if (Land == null) Land = new List<Land>(); Land.Add(s); }
         public void AddWeather(Cyclone s) { if (Weather == null) Weather = new List<Cyclone>(); Weather.Add(s);}
 
         public void AddWeatherPath(int i, List<double[]> Path) 
@@ -355,6 +442,7 @@ namespace MeteoServer.Components.WeatherCalculating
             time++;
 
             WeatherCadr cadr = new WeatherCadr(Land, Weather,MapX,MapY);
+            cadr.TIME = time;
 
                 return cadr;
         }
@@ -368,6 +456,7 @@ namespace MeteoServer.Components.WeatherCalculating
        double Y { get; set;}
        double R { get; set;}
        double V { get; set; }
+       
        
     }
 
@@ -412,6 +501,8 @@ namespace MeteoServer.Components.WeatherCalculating
         public double height { get { return Y; }  }
         public double weight { get { return X; }  }
 
+        private int time;
+        public int TIME { get { return time; } set { time = value; } }
 
         private List<IMapObject> MyLand;// список элементов карты
         private List<IMapObject> MyWeather;// список элементов погоды
@@ -429,7 +520,7 @@ namespace MeteoServer.Components.WeatherCalculating
             MyLand = new List<IMapObject>();
             for (int i = 0; i < Land.Count; i++)
             { 
-                IMapObject tmp = new Land(Land[i].X,Land[i].Y,Land[i].R,Land[i].V,0);
+                IMapObject tmp = new Land(Land[i].X,Land[i].Y,Land[i].R,Land[i].V,Land[i].C);
                 MyLand.Add(tmp);
             }
             
@@ -440,7 +531,7 @@ namespace MeteoServer.Components.WeatherCalculating
             MyWeather = new List<IMapObject>();
             for (int i = 0; i < Weather.Count; i++)
             { 
-                IMapObject tmp = new Land(Weather[i].X,Weather[i].Y,Weather[i].R,Weather[i].V,0);
+                IMapObject tmp = new Cyclone(Weather[i].X,Weather[i].Y,Weather[i].R,Weather[i].V,Weather[i].C);
                 MyWeather.Add(tmp);
             }
 

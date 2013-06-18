@@ -57,9 +57,9 @@
             // progress
             // 
             this.progress.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.progress.Location = new System.Drawing.Point(208, 569);
+            this.progress.Location = new System.Drawing.Point(21, 572);
             this.progress.Name = "progress";
-            this.progress.Size = new System.Drawing.Size(313, 27);
+            this.progress.Size = new System.Drawing.Size(695, 27);
             this.progress.TabIndex = 3;
             this.progress.TabStop = false;
             // 
@@ -83,7 +83,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(536, 569);
+            this.button1.Location = new System.Drawing.Point(664, 605);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(52, 27);
             this.button1.TabIndex = 6;
@@ -92,7 +92,7 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(140, 569);
+            this.button2.Location = new System.Drawing.Point(21, 605);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(52, 27);
             this.button2.TabIndex = 7;
