@@ -139,7 +139,7 @@ namespace MeteoServer.Components.WeatherCalculating
         }
         public List<WeatherCadr> GetWeatherFromCadr(WeatherCadr cadr,int time, IUserID user, string weather)
         {
-            frames = 50; // порция кадров
+            frames = 20; // порция кадров
 
             // нам нужно в память загрузить кадо
 

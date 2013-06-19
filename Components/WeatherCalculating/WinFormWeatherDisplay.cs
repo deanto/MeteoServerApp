@@ -30,7 +30,6 @@ namespace MeteoServer.Components.WeatherCalculating
 
         int globaltime;
 
-
         // данные для отображения видео
         List<WeatherCadr> currentBlock; // тут хранится видео, которое сейчас отображается
         int currentBlockStartTime;      // начальный момент времени для этого ролика
@@ -39,6 +38,8 @@ namespace MeteoServer.Components.WeatherCalculating
         //-----------------------------
 
         
+
+
         // блок функций работы со строкой состояния
         int progressStep = 2; // сколько пикселей на кадр 
         void ProgressClean()
@@ -86,7 +87,14 @@ namespace MeteoServer.Components.WeatherCalculating
 
         private void WinFormWeatherDisplay_Load(object sender, EventArgs e)
         {
-            initialvideo = wc.GetWeatherFromBegin(user, map, weather);
+            currentBlock = wc.GetWeatherFromBegin(user, map, weather);
+
+            currentBlockCurrentCadr = 0;
+            currentBlockFrames = currentBlock.Count;
+            currentBlockStartTime = 0;
+
+            globaltime = 0;
+
             ProgressClean();
         }
 
@@ -107,6 +115,7 @@ namespace MeteoServer.Components.WeatherCalculating
             int i;
             for (i = currentBlockCurrentCadr; i < currentBlock.Count; i++)
             {
+                currentBlockCurrentCadr++;
 
                 WeatherCadr now = currentBlock[i];
                 Bitmap cadr = new Bitmap((int)now.height, (int)now.weight);
@@ -162,15 +171,7 @@ namespace MeteoServer.Components.WeatherCalculating
             if (th != null)
                 th.Abort();
 
-            currentBlock = initialvideo;
-            currentBlockCurrentCadr = 0;
-            currentBlockFrames = currentBlock.Count;
-            currentBlockStartTime = 0;
 
-            globaltime = 0;
-
-
-            ProgressClean();
 
             ShowVideoThreaded();
         }
@@ -178,7 +179,7 @@ namespace MeteoServer.Components.WeatherCalculating
        void revertShow()
         {
 
-            ProgressClean();
+           // ProgressClean();
 
             ShowVideoThreaded();
         }
