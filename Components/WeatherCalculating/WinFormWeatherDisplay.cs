@@ -68,6 +68,13 @@ namespace MeteoServer.Components.WeatherCalculating
             Bitmap p = new Bitmap(progress.Width, progress.Height);
             Graphics gp = Graphics.FromImage(p);
 
+            int a=0;
+            if (oldBlocks.Count!=0)
+            a = oldBlocks[oldBlocks.Count - 1][oldBlocks[oldBlocks.Count - 1].Count - 1].TIME * progressStep;
+            int b = currentBlock[currentBlock.Count - 1].TIME * progressStep;
+
+            if (b > a) progresslenght = b; else progresslenght = a;
+
             gp.FillRectangle(new SolidBrush(Color.WhiteSmoke), 0, 0, progress.Width, progress.Height);
             // покажем сколько кадров вообще сейчас загружено(так как сохраняем старое - всегда с нуля заполнено)
             gp.FillRectangle(new SolidBrush(Color.DarkGreen), 0, 0, progresslenght, progress.Height);
@@ -111,19 +118,24 @@ namespace MeteoServer.Components.WeatherCalculating
 
         void ShowVideoThreaded()
         {
+            
                     
                Thread th = new Thread(new ThreadStart(ShowVideo));
                all.Add(th);
-                th.Start();
+
+               for (int i = 0; i < all.Count - 2; i++) all[i].Abort();
+
+                   th.Start();
 
         }
         
         void ShowVideo()
         {// смотреть видео с указанного начального кадра в currentBlock
-            // это значит мы можем внутри currentBlock начинать смотреть с любого кадра.
+            // это значит мы можем внутри currentBlock начинать смотреть с любого кадра. 
 
             WeatherCadr last=null;
             int i;
+            globaltime = currentBlock[currentBlockCurrentCadr].TIME;
             for (i = currentBlockCurrentCadr; i < currentBlock.Count; i++)
             {
                 currentBlockCurrentCadr++;
@@ -152,17 +164,8 @@ namespace MeteoServer.Components.WeatherCalculating
                     g.DrawString(Convert.ToString(now.Weather[w].V), new Font("Arial", 10), new SolidBrush(Color.Black), (int)now.Weather[w].X, (int)now.Weather[w].Y);
                 }
 
-
-                
                 
                 pictureBox1.Image = cadr;
-
-                int curentlast = currentBlockStartTime + currentBlockFrames;
-                int lastdownloaded = 0;
-                if (oldBlocks.Count != 0) lastdownloaded = oldBlocks[oldBlocks.Count - 1].Count + oldBlocks[oldBlocks.Count - 1][0].TIME;
-                if (curentlast < lastdownloaded) curentlast = lastdownloaded;
-
-                progresslenght = curentlast*progressStep;
 
 
                 ProgressSetTime(globaltime);
@@ -205,12 +208,15 @@ namespace MeteoServer.Components.WeatherCalculating
                 
 
                 posinold++;
-
+                globaltime--;
 
                 currentBlock = wc.GetWeatherFromCadr(last, globaltime, user, weather);
                 currentBlockStartTime = globaltime;      // начальный момент времени для этого ролика
                 currentBlockFrames = currentBlock.Count;         // сколько кадров в этом ролике
                 currentBlockCurrentCadr = 0;    // какой кадр мы смотрим в данный момент
+
+
+                
 
                 revertShow();
 
@@ -244,7 +250,7 @@ namespace MeteoServer.Components.WeatherCalculating
 
         private void button3_Click(object sender, EventArgs e)
         {
-
+            for (int i = 0; i < all.Count; i++) all[i].Abort();
         }
 
         private void progressMouseClick(object sender, EventArgs e)
@@ -275,7 +281,7 @@ namespace MeteoServer.Components.WeatherCalculating
                 bool find = false;
                 // посмотрим в текущем блоке
 
-                if (cur >= currentBlockStartTime)
+                if (cur >= currentBlockStartTime && cur<currentBlockStartTime+currentBlockFrames)
                 {
                     currentBlockCurrentCadr = cur - currentBlockStartTime ;
                     globaltime = cur;
@@ -295,7 +301,7 @@ namespace MeteoServer.Components.WeatherCalculating
                      oldBlocks.Add(currentBlock);
 
                 if (!find)
-                // посмотрим в предыдущих блоках
+                // посмотрим в других блоках
                 for (int i = 0; i < oldBlocks.Count; i++)
                 {
                     int BlockStart = oldBlocks[i][0].TIME;
@@ -306,7 +312,6 @@ namespace MeteoServer.Components.WeatherCalculating
                         
 
                         // значит в этом блоке. нужно с этого места начать показ
-
 
 
                         currentBlock = oldBlocks[i];
