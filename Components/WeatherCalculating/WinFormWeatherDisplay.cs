@@ -37,7 +37,8 @@ namespace MeteoServer.Components.WeatherCalculating
         int currentBlockCurrentCadr;    // какой кадр мы смотрим в данный момент
         //-----------------------------
 
-        
+        // для того, чтоб сохранить ранее загруженные данные создадим список
+        List<List<WeatherCadr>> oldBlocks; // сюда будем добавлять просмотренные блоки
 
 
         // блок функций работы со строкой состояния
@@ -58,16 +59,17 @@ namespace MeteoServer.Components.WeatherCalculating
             progress.Image = p;
 
         }
+
+        int progresslenght=0;
+
         void ProgressSetTime(int time)
         {
             Bitmap p = new Bitmap(progress.Width, progress.Height);
             Graphics gp = Graphics.FromImage(p);
 
-            
-
             gp.FillRectangle(new SolidBrush(Color.WhiteSmoke), 0, 0, progress.Width, progress.Height);
-            // покажем сколько кадров вообще сейчас загружено
-            gp.FillRectangle(new SolidBrush(Color.DarkGreen), currentBlock[0].TIME * progressStep, 0,  currentBlockFrames * progressStep, progress.Height);
+            // покажем сколько кадров вообще сейчас загружено(так как сохраняем старое - всегда с нуля заполнено)
+            gp.FillRectangle(new SolidBrush(Color.DarkGreen), 0, 0, progresslenght, progress.Height);
 
             
             gp.DrawLine(new Pen(new SolidBrush(Color.Purple), progressStep), time * progressStep, 0, time * progressStep, progress.Width);
@@ -96,6 +98,9 @@ namespace MeteoServer.Components.WeatherCalculating
             globaltime = 0;
 
             ProgressClean();
+
+
+            oldBlocks = new List<List<WeatherCadr>>();
         }
 
 
@@ -110,6 +115,8 @@ namespace MeteoServer.Components.WeatherCalculating
         void ShowVideo()
         {// смотреть видео с указанного начального кадра в currentBlock
             // это значит мы можем внутри currentBlock начинать смотреть с любого кадра.
+
+            progresslenght += currentBlockFrames * progressStep;
 
             WeatherCadr last=null;
             int i;
@@ -155,6 +162,12 @@ namespace MeteoServer.Components.WeatherCalculating
             // если дошли до сюда - значит весь буффер просмотрели что был. нужен следующий
             if (last != null && globaltime < (int)((double)progress.Width / (double)progressStep))
             {
+
+                // запомним предыдущий блок
+
+                oldBlocks.Add(currentBlock);
+
+
                 currentBlock = wc.GetWeatherFromCadr(last,globaltime, user, weather);
                 currentBlockStartTime=globaltime;      // начальный момент времени для этого ролика
                 currentBlockFrames = currentBlock.Count ;         // сколько кадров в этом ролике
