@@ -16,6 +16,8 @@ namespace MeteoServer.Components.WeatherCalculating
 {
     public partial class WinFormWeatherDisplay : Form
     {
+        bool stoped;
+
         private WeatherCalculating wc;
         public WeatherCalculating WC { set { wc = value; } }
 
@@ -47,8 +49,7 @@ namespace MeteoServer.Components.WeatherCalculating
         void ProgressClean()
         {
             
-            label3.Text = "0";
-            label4.Text = Convert.ToString((int)((double)progress.Width / (double)progressStep));
+           
 
             Bitmap p = new Bitmap(progress.Width, progress.Height);
             Graphics gp = Graphics.FromImage(p);
@@ -135,97 +136,136 @@ namespace MeteoServer.Components.WeatherCalculating
 
             WeatherCadr last=null;
             int i;
-            globaltime = currentBlock[currentBlockCurrentCadr].TIME;
-            for (i = currentBlockCurrentCadr; i < currentBlock.Count; i++)
-            {
-                currentBlockCurrentCadr++;
+            if (currentBlockCurrentCadr != currentBlock.Count)
+            {// это условие на то, что мы могли нажать кнопочку стоп в момент когда видео уже кончилось а новое не подгрузилось
 
-                WeatherCadr now = currentBlock[i];
-                Bitmap cadr = new Bitmap((int)now.height, (int)now.weight);
-                Graphics g = Graphics.FromImage(cadr);
-
-
-                //// очистим
-                //g.FillRectangle(new SolidBrush(Color.White), 0, 0, cadr.Width, cadr.Height);
-                //pictureBox1.Image = cadr;
-
-                // нарисуем землю
-                for (int l = 0; l < now.Land.Count; l++)
+                globaltime = currentBlock[currentBlockCurrentCadr].TIME;
+                for (i = currentBlockCurrentCadr; i < currentBlock.Count; i++)
                 {
-                    g.FillEllipse(new SolidBrush(Color.DarkMagenta), (int)now.Land[l].X - (int)(now.Land[l].R), (int)now.Land[l].Y - (int)(now.Land[l].R), (int)now.Land[l].R * 2, (int)now.Land[l].R * 2);
-                    g.DrawString(Convert.ToString(now.Land[l].V), new Font("Arial", 10), new SolidBrush(Color.Aqua), (int)now.Land[l].X, (int)now.Land[l].Y);
+                    currentBlockCurrentCadr++;
 
-                }
+                    WeatherCadr now = currentBlock[i];
+                    Bitmap cadr = new Bitmap((int)now.height, (int)now.weight);
+                    Graphics g = Graphics.FromImage(cadr);
+
+
+                    //// очистим
+                    //g.FillRectangle(new SolidBrush(Color.White), 0, 0, cadr.Width, cadr.Height);
+                    //pictureBox1.Image = cadr;
+
+                    // нарисуем землю
+                    for (int l = 0; l < now.Land.Count; l++)
+                    {
+                        g.FillEllipse(new SolidBrush(Color.DarkMagenta), (int)now.Land[l].X - (int)(now.Land[l].R), (int)now.Land[l].Y - (int)(now.Land[l].R), (int)now.Land[l].R * 2, (int)now.Land[l].R * 2);
+                        g.DrawString(Convert.ToString(now.Land[l].V), new Font("Arial", 10), new SolidBrush(Color.Aqua), (int)now.Land[l].X, (int)now.Land[l].Y);
+
+                    }
                     // нарисуем циклоны
 
-                for (int w = 0; w < now.Weather.Count; w++)
-                {
-                    g.FillEllipse(new SolidBrush(Color.DarkGray), (int)now.Weather[w].X - (int)(now.Weather[w].R), (int)now.Weather[w].Y - (int)(now.Weather[w].R), (int)now.Weather[w].R * 2, (int)now.Weather[w].R * 2);
-                    g.DrawString(Convert.ToString(now.Weather[w].V), new Font("Arial", 10), new SolidBrush(Color.Black), (int)now.Weather[w].X, (int)now.Weather[w].Y);
+                    for (int w = 0; w < now.Weather.Count; w++)
+                    {
+                        g.FillEllipse(new SolidBrush(Color.DarkGray), (int)now.Weather[w].X - (int)(now.Weather[w].R), (int)now.Weather[w].Y - (int)(now.Weather[w].R), (int)now.Weather[w].R * 2, (int)now.Weather[w].R * 2);
+                        g.DrawString(Convert.ToString(now.Weather[w].V), new Font("Arial", 10), new SolidBrush(Color.Black), (int)now.Weather[w].X, (int)now.Weather[w].Y);
+                    }
+
+
+                    pictureBox1.Image = cadr;
+
+
+                    ProgressSetTime(globaltime);
+                    globaltime++;
+                    System.Threading.Thread.Sleep(Convert.ToInt32(textBox1.Text));
+
+                    if (i == currentBlock.Count - 1) last = now;
+
                 }
 
-                
-                pictureBox1.Image = cadr;
+                // если дошли до сюда - значит весь буффер просмотрели что был. нужен следующий
+                // но если мы смотрим один из загруженных - и следующий тоже загружен - просто тот нужно взять
+                // зарружать следующий нужно только если мы сейчас просмотрели последний загруженный блок
+
+                if (posinold < oldBlocks.Count - 1)
+                {
+                    // значит смотрим блок из старых, и следующий точно есть блок
+
+                    currentBlock = oldBlocks[posinold + 1];
+                    posinold++;
+                    currentBlockStartTime = globaltime;
+                    currentBlockFrames = currentBlock.Count;
+                    currentBlockCurrentCadr = 0;
+
+                    revertShow();
+                }
+                else
+                    if (last != null && globaltime < (int)((double)progress.Width / (double)progressStep))
+                    {
+                        // значит нужна загрузка
+
+                        // запомним предыдущий блок
+
+                        bool f = false;
+                        for (int t = 0; t < oldBlocks.Count; t++)
+                            if (oldBlocks[t][0].TIME == currentBlock[0].TIME) f = true;
+                        if (!f)
+                            oldBlocks.Add(currentBlock);
 
 
-                ProgressSetTime(globaltime);
-                globaltime++;
-                System.Threading.Thread.Sleep(Convert.ToInt32(textBox1.Text));
 
-                if (i == currentBlock.Count - 1) last = now;
+                        posinold++;
+                        globaltime--;
 
-            }
+                        currentBlock = wc.GetWeatherFromCadr(last, globaltime, user, weather);
+                        currentBlockStartTime = globaltime;      // начальный момент времени для этого ролика
+                        currentBlockFrames = currentBlock.Count;         // сколько кадров в этом ролике
+                        currentBlockCurrentCadr = 0;    // какой кадр мы смотрим в данный момент
 
-            // если дошли до сюда - значит весь буффер просмотрели что был. нужен следующий
-            // но если мы смотрим один из загруженных - и следующий тоже загружен - просто тот нужно взять
-            // зарружать следующий нужно только если мы сейчас просмотрели последний загруженный блок
 
-            if (posinold < oldBlocks.Count-1)
+
+
+                        revertShow();
+
+                    }
+            }   
+        }
+
+        void ShowOneCadr()
+        { // показывает один кадр всего
+            // по текущим параметрам
+
+
+
+            WeatherCadr now = currentBlock[currentBlockCurrentCadr];
+            Bitmap cadr = new Bitmap((int)now.height, (int)now.weight);
+            Graphics g = Graphics.FromImage(cadr);
+
+
+            //// очистим
+            //g.FillRectangle(new SolidBrush(Color.White), 0, 0, cadr.Width, cadr.Height);
+            //pictureBox1.Image = cadr;
+
+            // нарисуем землю
+            for (int l = 0; l < now.Land.Count; l++)
             {
-                // значит смотрим блок из старых, и следующий точно есть блок
+                g.FillEllipse(new SolidBrush(Color.DarkMagenta), (int)now.Land[l].X - (int)(now.Land[l].R), (int)now.Land[l].Y - (int)(now.Land[l].R), (int)now.Land[l].R * 2, (int)now.Land[l].R * 2);
+                g.DrawString(Convert.ToString(now.Land[l].V), new Font("Arial", 10), new SolidBrush(Color.Aqua), (int)now.Land[l].X, (int)now.Land[l].Y);
 
-                currentBlock = oldBlocks[posinold + 1];
-                posinold++;
-                currentBlockStartTime = globaltime;
-                currentBlockFrames = currentBlock.Count;
-                currentBlockCurrentCadr = 0;
-
-              revertShow();
             }
-            else
-                if (last != null && globaltime < (int)((double)progress.Width / (double)progressStep))
+            // нарисуем циклоны
+
+            for (int w = 0; w < now.Weather.Count; w++)
             {
-                // значит нужна загрузка
-
-                // запомним предыдущий блок
-
-                bool f = false;
-                for (int t = 0; t < oldBlocks.Count; t++)
-                    if (oldBlocks[t][0].TIME == currentBlock[0].TIME) f = true;
-                if (!f)
-                    oldBlocks.Add(currentBlock);
-
-                
-
-                posinold++;
-                globaltime--;
-
-                currentBlock = wc.GetWeatherFromCadr(last, globaltime, user, weather);
-                currentBlockStartTime = globaltime;      // начальный момент времени для этого ролика
-                currentBlockFrames = currentBlock.Count;         // сколько кадров в этом ролике
-                currentBlockCurrentCadr = 0;    // какой кадр мы смотрим в данный момент
-
-
-                
-
-                revertShow();
-
+                g.FillEllipse(new SolidBrush(Color.DarkGray), (int)now.Weather[w].X - (int)(now.Weather[w].R), (int)now.Weather[w].Y - (int)(now.Weather[w].R), (int)now.Weather[w].R * 2, (int)now.Weather[w].R * 2);
+                g.DrawString(Convert.ToString(now.Weather[w].V), new Font("Arial", 10), new SolidBrush(Color.Black), (int)now.Weather[w].X, (int)now.Weather[w].Y);
             }
-            
+
+
+            pictureBox1.Image = cadr;
+
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
+            stoped = false;
             ShowVideoThreaded();
         }
 
@@ -251,6 +291,7 @@ namespace MeteoServer.Components.WeatherCalculating
         private void button3_Click(object sender, EventArgs e)
         {
             for (int i = 0; i < all.Count; i++) all[i].Abort();
+            stoped = true;
         }
 
         private void progressMouseClick(object sender, EventArgs e)
@@ -289,8 +330,6 @@ namespace MeteoServer.Components.WeatherCalculating
                     for (int q = 0; q < all.Count; q++) all[q].Abort();
                     find = true;
                     
-
-                    
                 }
 
                 // если текущий проигрываемый блок не был еще записан в старые - добавим
@@ -326,15 +365,21 @@ namespace MeteoServer.Components.WeatherCalculating
                         
                     }
                 }
-
-                revertShow();
+                if (!stoped)
+                    revertShow();
+                else
+                {
+                    ProgressSetTime(globaltime);
+                    ShowOneCadr();
+                }
+                    
 
 
             }
             else
             { 
             // нужна загрузка
-                MessageBox.Show("нужна загрузка");
+                MessageBox.Show("в данной версии системы, загрузка данных не в порядке очереди недоступна");
 
             }
             
