@@ -28,7 +28,7 @@ namespace MeteoServer.Components.WeatherCalculating
         // компонента отвечающая за расчет погоды
         public List<WeatherCadr> GetWeatherFromBegin(IUserID user, string map, string weather)
         {
-            frames = 10; // порция кадров
+            frames = 50; // порция кадров
 
             // дай мне графику(набор кадров вперед) для этой карты для этой погоды в это время
             // считается что можно указывать файлик погоды. типа например есть карта россии
