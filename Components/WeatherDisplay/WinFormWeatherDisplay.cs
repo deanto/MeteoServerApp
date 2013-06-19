@@ -373,8 +373,6 @@ namespace MeteoServer.Components.WeatherCalculating
                     ShowOneCadr();
                 }
                     
-
-
             }
             else
             { 
@@ -384,10 +382,6 @@ namespace MeteoServer.Components.WeatherCalculating
                 // будем в буффер загружать столько видосов по очереди, чтоб в последнем была указанная точка
                 // потом просто стартанем с этой точки
 
-
-
-
-
             }
             
 
@@ -396,6 +390,5 @@ namespace MeteoServer.Components.WeatherCalculating
         
     }
 
-    
 
 }

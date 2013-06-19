@@ -74,10 +74,10 @@
     </Compile>
     <Compile Include="Components\UserManagement\IUserManagement.cs" />
     <Compile Include="Components\WeatherCalculating\WeatherCalculating.cs" />
-    <Compile Include="Components\WeatherCalculating\WinFormWeatherDisplay.cs">
+    <Compile Include="Components\WeatherDisplay\WinFormWeatherDisplay.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Components\WeatherCalculating\WinFormWeatherDisplay.Designer.cs">
+    <Compile Include="Components\WeatherDisplay\WinFormWeatherDisplay.Designer.cs">
       <DependentUpon>WinFormWeatherDisplay.cs</DependentUpon>
     </Compile>
     <Compile Include="Components\WeatherDisplay\WeatherDisplay.cs" />
@@ -111,7 +111,7 @@
     <EmbeddedResource Include="Components\ServerView\ServerView.resx">
       <DependentUpon>ServerView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Components\WeatherCalculating\WinFormWeatherDisplay.resx">
+    <EmbeddedResource Include="Components\WeatherDisplay\WinFormWeatherDisplay.resx">
       <DependentUpon>WinFormWeatherDisplay.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">

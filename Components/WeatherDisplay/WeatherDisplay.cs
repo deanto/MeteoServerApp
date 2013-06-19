@@ -8,7 +8,7 @@ using MeteoServer.Objects;
 
 namespace MeteoServer.Components.WeatherDisplay
 {
-    abstract class ADisplayer
+   public abstract class ADisplayer
     { 
         // абстрактный класс отображения.
         // кто захочет сделать свое отображение - это wpf и winform - отнаследуются от этого класса и будут иметь уже внутри экземпляр компоненты рассчета погоды
@@ -40,9 +40,7 @@ namespace MeteoServer.Components.WeatherDisplay
             wfwd.WEATHER = weather;
             wfwd.MAP = map;
             wfwd.USER = user;
-
             wfwd.ShowDialog();
-            
 
         }
 
