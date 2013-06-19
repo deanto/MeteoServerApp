@@ -223,8 +223,8 @@ namespace MeteoServer.Components.FileManagement
         {
             WeatherDisplay.winfomfDisplayer player = new WeatherDisplay.winfomfDisplayer();
 
-            string p = @"DATA_BASE\Files\Public\Russia\map.txt";
-            string d = @"DATA_BASE\Files\Public\Russia\weather.txt";
+            string p = textBox3.Text;
+            string d = textBox5.Text;
 
             player.ShowWeather(current, p, d);
         }
