@@ -63,6 +63,7 @@
             this.progress.Size = new System.Drawing.Size(695, 27);
             this.progress.TabIndex = 3;
             this.progress.TabStop = false;
+            this.progress.Click += new System.EventHandler(this.progressMouseClick);
             // 
             // label3
             // 

@@ -39,6 +39,7 @@ namespace MeteoServer.Components.WeatherCalculating
 
         // для того, чтоб сохранить ранее загруженные данные создадим список
         List<List<WeatherCadr>> oldBlocks; // сюда будем добавлять просмотренные блоки
+        int posinold=0;
 
 
         // блок функций работы со строкой состояния
@@ -95,6 +96,8 @@ namespace MeteoServer.Components.WeatherCalculating
             currentBlockFrames = currentBlock.Count;
             currentBlockStartTime = 0;
 
+            progresslenght = currentBlock[currentBlock.Count - 1].TIME * progressStep;
+
             globaltime = 0;
 
             ProgressClean();
@@ -103,20 +106,21 @@ namespace MeteoServer.Components.WeatherCalculating
             oldBlocks = new List<List<WeatherCadr>>();
         }
 
-
-        Thread th; 
+        List<Thread> all = new List<Thread>();
+      
 
         void ShowVideoThreaded()
         {
-            th = new Thread(new ThreadStart(ShowVideo));
-            th.Start();
+                    
+               Thread th = new Thread(new ThreadStart(ShowVideo));
+               all.Add(th);
+                th.Start();
+
         }
         
         void ShowVideo()
         {// смотреть видео с указанного начального кадра в currentBlock
             // это значит мы можем внутри currentBlock начинать смотреть с любого кадра.
-
-            progresslenght += currentBlockFrames * progressStep;
 
             WeatherCadr last=null;
             int i;
@@ -149,7 +153,17 @@ namespace MeteoServer.Components.WeatherCalculating
                 }
 
 
+                
+                
                 pictureBox1.Image = cadr;
+
+                int curentlast = currentBlockStartTime + currentBlockFrames;
+                int lastdownloaded = 0;
+                if (oldBlocks.Count != 0) lastdownloaded = oldBlocks[oldBlocks.Count - 1].Count + oldBlocks[oldBlocks.Count - 1][0].TIME;
+                if (curentlast < lastdownloaded) curentlast = lastdownloaded;
+
+                progresslenght = curentlast*progressStep;
+
 
                 ProgressSetTime(globaltime);
                 globaltime++;
@@ -160,40 +174,57 @@ namespace MeteoServer.Components.WeatherCalculating
             }
 
             // если дошли до сюда - значит весь буффер просмотрели что был. нужен следующий
-            if (last != null && globaltime < (int)((double)progress.Width / (double)progressStep))
+            // но если мы смотрим один из загруженных - и следующий тоже загружен - просто тот нужно взять
+            // зарружать следующий нужно только если мы сейчас просмотрели последний загруженный блок
+
+            if (posinold < oldBlocks.Count-1)
             {
+                // значит смотрим блок из старых, и следующий точно есть блок
+
+                currentBlock = oldBlocks[posinold + 1];
+                posinold++;
+                currentBlockStartTime = globaltime;
+                currentBlockFrames = currentBlock.Count;
+                currentBlockCurrentCadr = 0;
+
+              revertShow();
+            }
+            else
+                if (last != null && globaltime < (int)((double)progress.Width / (double)progressStep))
+            {
+                // значит нужна загрузка
 
                 // запомним предыдущий блок
 
-                oldBlocks.Add(currentBlock);
+                bool f = false;
+                for (int t = 0; t < oldBlocks.Count; t++)
+                    if (oldBlocks[t][0].TIME == currentBlock[0].TIME) f = true;
+                if (!f)
+                    oldBlocks.Add(currentBlock);
 
-
-                currentBlock = wc.GetWeatherFromCadr(last,globaltime, user, weather);
-                currentBlockStartTime=globaltime;      // начальный момент времени для этого ролика
-                currentBlockFrames = currentBlock.Count ;         // сколько кадров в этом ролике
-                currentBlockCurrentCadr = 0 ;    // какой кадр мы смотрим в данный момент
                 
 
-                revertShow();
-            }
+                posinold++;
 
+
+                currentBlock = wc.GetWeatherFromCadr(last, globaltime, user, weather);
+                currentBlockStartTime = globaltime;      // начальный момент времени для этого ролика
+                currentBlockFrames = currentBlock.Count;         // сколько кадров в этом ролике
+                currentBlockCurrentCadr = 0;    // какой кадр мы смотрим в данный момент
+
+                revertShow();
+
+            }
+            
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
-            if (th != null)
-                th.Abort();
-
-
-
             ShowVideoThreaded();
         }
 
        void revertShow()
         {
-
-           // ProgressClean();
-
             ShowVideoThreaded();
         }
 
@@ -213,8 +244,96 @@ namespace MeteoServer.Components.WeatherCalculating
 
         private void button3_Click(object sender, EventArgs e)
         {
-            if (th != null)
-                th.Abort();
+
+        }
+
+        private void progressMouseClick(object sender, EventArgs e)
+        {
+            // указали с какого места воспроизвести видео
+
+            Point p = pictureBox1.PointToClient(System.Windows.Forms.Cursor.Position);
+            
+
+            // если у нас в буффере такой кусок - с него начнем показ.
+            // если нет в буфере - нужно загрузить столько буфферов вперед - чтоб указанное место было в последнем загруженном
+
+
+            int cur = (int)(p.X / progressStep); // это такт времени на полосе.
+
+            // рассчитаем до какого момента у нас есть ролики. старые + текущий который показываем
+            int curentlast = currentBlockStartTime + currentBlockFrames;
+            int lastdownloaded = 0;
+            if (oldBlocks.Count!=0)lastdownloaded= oldBlocks[oldBlocks.Count - 1].Count + oldBlocks[oldBlocks.Count - 1][0].TIME;
+            if (curentlast < lastdownloaded) curentlast = lastdownloaded;
+
+
+            if (cur < curentlast)
+            {
+                // меньше чем в последнем загруженном видео
+                // нужно найти в каком блоке и начать воспроизводить с него.
+
+                bool find = false;
+                // посмотрим в текущем блоке
+
+                if (cur >= currentBlockStartTime)
+                {
+                    currentBlockCurrentCadr = cur - currentBlockStartTime ;
+                    globaltime = cur;
+
+                    for (int q = 0; q < all.Count; q++) all[q].Abort();
+                    find = true;
+                    
+
+                    
+                }
+
+                // если текущий проигрываемый блок не был еще записан в старые - добавим
+                bool f = false;
+                for (int i = 0; i < oldBlocks.Count; i++)
+                    if (oldBlocks[i][0].TIME == currentBlock[0].TIME) f = true;
+                 if (!f)  
+                     oldBlocks.Add(currentBlock);
+
+                if (!find)
+                // посмотрим в предыдущих блоках
+                for (int i = 0; i < oldBlocks.Count; i++)
+                {
+                    int BlockStart = oldBlocks[i][0].TIME;
+                    int BlockStop = oldBlocks[i].Count + BlockStart;
+
+                    if (BlockStart <= cur && cur < BlockStop)
+                    {
+                        
+
+                        // значит в этом блоке. нужно с этого места начать показ
+
+
+
+                        currentBlock = oldBlocks[i];
+                        currentBlockStartTime = BlockStart;
+                        currentBlockFrames = oldBlocks[i].Count;
+                        currentBlockCurrentCadr = cur - BlockStart;
+
+                        globaltime = cur;
+
+                        posinold = i; //указываем, что смотрим блок из ранее загруженных
+                        for (int q = 0; q < all.Count; q++) all[q].Abort();
+                        
+                    }
+                }
+
+                revertShow();
+
+
+            }
+            else
+            { 
+            // нужна загрузка
+                MessageBox.Show("нужна загрузка");
+
+            }
+            
+
         }
 
         
