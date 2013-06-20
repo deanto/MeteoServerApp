@@ -364,7 +364,7 @@ namespace MeteoServer.Components.WeatherCalculating
         public WeatherCadr CalculateTact()
         {
 
-            int cadrPerLine = 10;
+            int cadrPerLine = 24;
 
             //рассчитываем кадр исходя их текущих данных и возвращаем копию текущего состоянияю
 
